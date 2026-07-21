@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#111820" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>方块越狱：封锁区</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="hud">
+      <div class="brand"><span>⛓</span><b>BLOCK<br>BREAK</b></div>
+      <div class="progress"><div id="bar"></div><strong id="stage">牢房区 · 01</strong></div>
+      <div class="timer">⏱ <span id="time">00:00</span></div>
+      <button id="reset" class="pill yellow" aria-label="从头重新开始">↻ 重新越狱</button>
+      <button id="pauseButton" class="pill pause-button" aria-label="暂停游戏">Ⅱ</button>
+      <button id="sound" class="pill cyan" aria-label="切换声音">🔊</button>
+    </div>
+    <div id="mission"><small>▰ 越狱目标</small><b id="missionText">翻过牢房警戒线</b></div>
+    <div id="hunterHud" class="hidden"><div class="hunter-title"><span>⚠ 金发9号追击者</span><b id="hunterHpText">100 / 100</b></div><div class="hunter-bar"><i id="hunterHp"></i></div></div>
+    <button id="attack" class="hidden">👊<span>攻击 [F]</span></button>
+    <div id="tip">WASD 移动 · 空格跳跃 · 拖动旋转 · 滚轮缩放 · C 回正视角 · F 攻击</div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="rotateHint">↻ 横屏游玩体验更佳</div>
+    <div id="mobile">
+      <div id="stick"><i></i></div>
+      <button id="jump" aria-label="跳跃">⬆<span>跳跃</span></button>
+    </div>
+    <div id="start" class="overlay">
+      <div class="card">
+        <div class="wanted">PRISONER #087</div>
+        <div class="mascot">⛓️</div>
+        <p class="eyebrow">VOXEL PRISON ESCAPE</p>
+        <h1>方块越狱<br><em>封锁区</em></h1>
+        <p>警报已经响起。穿过牢房、下水道与监狱屋顶，击退不断追来的金发 9 号守卫。</p>
+        <div class="checkpoint-note"><i></i><span><b>绿色信标 = 检查点</b><small>激活后，失败会从这里继续</small></span></div>
+        <button id="play">执行越狱 <span>▶</span></button>
+        <small><span class="desktop-copy">WASD 移动 · 空格跳跃 · 拖动旋转视角</span><span class="mobile-copy">左侧摇杆移动 · 右侧按钮跳跃/攻击 · 空白区域拖动视角</span></small>
+      </div>
+    </div>
+    <div id="win" class="overlay hidden">
+      <div class="card win-card">
+        <div class="mascot">🚁</div><p class="eyebrow">MISSION COMPLETE</p>
+        <h1>越狱成功！</h1><p>本次逃脱用时</p><div id="finalTime">00:00</div>
+        <div id="bestTime">最佳纪录 --:--</div>
+        <button id="again">再次潜入 <span>↻</span></button>
+      </div>
+    </div>
+    <div id="pauseMenu" class="overlay hidden">
+      <div class="card pause-card">
+        <p class="eyebrow">SYSTEM PAUSED</p>
+        <h1>行动暂停</h1>
+        <div class="setting-row"><label for="quality">画质</label><select id="quality"><option value="auto">自动</option><option value="high">高画质</option><option value="low">流畅</option></select></div>
+        <div class="perf-row">实时性能 <b id="fpsReadout">-- FPS</b></div>
+        <button id="resume">继续越狱 <span>▶</span></button>
+        <button id="pauseRestart" class="secondary">从头开始 <span>↻</span></button>
+        <small>按 ESC 可继续游戏</small>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
