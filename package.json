@@ -3,6 +3,17 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": { "dev": "vite --host 127.0.0.1", "build": "vite build", "audit:levels": "node scripts/level-audit.mjs" },
-  "dependencies": { "three": "^0.178.0", "vite": "^7.0.6" }
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "audit:levels": "node scripts/level-audit.mjs"
+  },
+  "dependencies": {
+    "three": "^0.178.0",
+    "vite": "^7.0.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "wrangler": "4.92.0"
+  }
 }
