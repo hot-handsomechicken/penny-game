@@ -10,7 +10,8 @@
     "audit:collision": "node scripts/collision-audit.mjs",
     "audit:hunter": "node scripts/hunter-ai-audit.mjs",
     "audit:progression": "node scripts/progression-audit.mjs",
-    "test": "pnpm run audit:levels && pnpm run audit:collision && pnpm run audit:hunter && pnpm run audit:progression"
+    "audit:controls": "node scripts/control-audit.mjs",
+    "test": "pnpm run audit:levels && pnpm run audit:collision && pnpm run audit:hunter && pnpm run audit:progression && pnpm run audit:controls"
   },
   "dependencies": {
     "three": "^0.178.0",
