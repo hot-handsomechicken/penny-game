@@ -37,4 +37,8 @@ for(const [index,stage] of stages.entries()){
 }
 
 assert.ok(player.speed>5.3,'最终关追击者速度不应超过玩家');
+const finalCheckpoint={x:0,z:572},moneyGun={x:-4.8,z:575};
+const pickupDistance=Math.hypot(finalCheckpoint.x-moneyGun.x,finalCheckpoint.z-moneyGun.z);
+assert.ok(pickupDistance>=3&&pickupDistance<=7,'钞票枪应位于最终检查点附近但需要主动前往取得');
 console.log(`PASS  二十关检查点顺序、关键通路与最终追击速度`);
+console.log(`PASS  最终检查点到钞票枪 ${pickupDistance.toFixed(2)} 米，拾取距离合理`);

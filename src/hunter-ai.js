@@ -59,3 +59,17 @@ export function advanceHunterBrain(brain, dt, distance) {
 export function comboDamage(combo) {
   return [24, 28, 34][Math.max(0, Math.min(2, combo - 1))];
 }
+
+export function hunterMaxHpForEncounter(encounterIndex) {
+  return 100 + Math.max(0, encounterIndex) * 6;
+}
+
+export function damageMechArm(mech, side, damage) {
+  const key = side === 'left' ? 'leftArmHp' : 'rightArmHp';
+  const previous = mech[key];
+  if (previous <= 0) return 'destroyed';
+  mech[key] = Math.max(0, previous - Math.max(0, damage));
+  if (mech.leftArmHp <= 0 && mech.rightArmHp <= 0) return 'defeated';
+  if (previous > 0 && mech[key] === 0) return 'arm-destroyed';
+  return 'hit';
+}

@@ -4,6 +4,8 @@ import {
   HUNTER_STRIKE_RANGE,
   advanceHunterBrain,
   comboDamage,
+  damageMechArm,
+  hunterMaxHpForEncounter,
   resetHunterBrain,
   stunHunter,
 } from '../src/hunter-ai.js';
@@ -38,6 +40,22 @@ for(const stage of encounters){
   assert.ok(spawn-checkpoint>=12,`第 ${stage+1} 关反应距离不足`);
 }
 
+const normalEncounterHp=encounters.slice(0,-1).map((_,index)=>hunterMaxHpForEncounter(index));
+assert.deepEqual(normalEncounterHp,[100,106,112,118,124,130,136,142,148]);
+for(let index=1;index<normalEncounterHp.length;index++)assert.equal(normalEncounterHp[index]-normalEncounterHp[index-1],6,'梅东血量应逐次小幅增加');
+
+const mech={leftArmHp:100,rightArmHp:100};
+assert.equal(damageMechArm(mech,'left',20),'hit');
+assert.deepEqual(mech,{leftArmHp:80,rightArmHp:100},'命中左臂不应误伤右臂');
+for(let hit=0;hit<3;hit++)damageMechArm(mech,'left',20);
+assert.equal(damageMechArm(mech,'left',20),'arm-destroyed');
+assert.equal(mech.rightArmHp,100,'摧毁一条手臂时另一条应保持完整');
+for(let hit=0;hit<4;hit++)damageMechArm(mech,'right',20);
+assert.equal(damageMechArm(mech,'right',20),'defeated');
+assert.deepEqual(mech,{leftArmHp:0,rightArmHp:0});
+
 console.log('PASS  追击者预警、蓄力、攻击与恢复状态');
 console.log('PASS  受击眩晕可正确打断追击动作');
+console.log('PASS  九次普通遭遇的血量以 6 点为单位平缓递增');
+console.log('PASS  机甲双臂独立受伤，必须分别摧毁');
 console.log('PASS  连击伤害与十个追击关卡反应距离合理');

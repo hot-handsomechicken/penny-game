@@ -16,6 +16,8 @@ import {
   HUNTER_STRIKE_RANGE,
   advanceHunterBrain,
   comboDamage,
+  damageMechArm,
+  hunterMaxHpForEncounter,
   resetHunterBrain,
   stunHunter,
 } from './hunter-ai.js';
@@ -146,8 +148,9 @@ danger(0,.03,555,14,.15,22,M.water);
 const scaffoldRoute=[[-2.5,546,.28],[0,550,.48],[2.5,554,.68],[0,558,.88],[-2.5,562,1.08],[0,566,.72]];scaffoldRoute.forEach(([x,z,y],k)=>{box(x,y,z,3,.55,2.6,k%2?M.metal:M.crate,true);pipe(x,y+1.3,z,2.6,'y',M.rust)});
 bars(-7,555,1,24);bars(7,555,-1,24);
 
-// 最终停机坪：升降光栅、最终封锁与真实撤离直升机
-for(let k=0;k<3;k++){const o=danger(0,.55,578+k*7.5,11.5,.25,.34,M.red);o.userData={move:'y',base:.55,amp:1.65,speed:1.55+k*.12,phase:k*.9};movers.push(o)}
+// 最终停机坪：武器入口、开阔 Boss 区与真实撤离直升机
+{const o=danger(0,.55,578,11.5,.25,.34,M.red);o.userData={move:'y',base:.55,amp:1.65,speed:1.55,phase:0};movers.push(o)}
+const moneyGunPickup=new THREE.Group();moneyGunPickup.position.set(-4.8,0,575);world.add(moneyGunPickup);box(0,.12,0,2.3,.24,2.3,M.green,false,true,moneyGunPickup);box(0,.78,0,1.45,.5,.45,M.green,false,true,moneyGunPickup);box(.65,.63,0,.75,.22,.22,M.metal,false,true,moneyGunPickup);box(-.45,.48,0,.3,.55,.28,M.black,false,true,moneyGunPickup);textSprite('💵 MONEY GUN',0,2.25,0,.38,'#d6ff68',moneyGunPickup);
 box(0,-.25,600.8,15,.5,4,M.black,true);box(0,.03,600.8,12,.08,3.5,M.hazard);
 const heli=new THREE.Group();heli.position.set(0,3.3,602);world.add(heli);box(0,0,0,5,2.2,3,M.black,false,true,heli);box(0,.8,-2.4,1.1,1,3.2,M.black,false,true,heli);box(0,1.5,0,10,.15,.28,M.bar,false,true,heli);box(0,.2,2.1,2.7,1.5,1.5,M.black,false,true,heli);textSprite('FINAL EVAC  →',0,5.1,597,.78,'#bfff4f');
 
@@ -164,9 +167,18 @@ body.position.y=1.25;head.position.y=2.27;hair.position.y=2.63;leg1.position.set
 // 阿根廷蓝白 10 号“梅东”：深色短发与胡须的体素化追击者。
 function medongFaceMaterial(){const c=document.createElement('canvas');c.width=c.height=16;const q=c.getContext('2d');q.fillStyle='#d79a70';q.fillRect(0,0,16,16);q.fillStyle='#35231d';q.fillRect(1,0,14,4);q.fillRect(2,4,2,2);q.fillRect(12,4,2,2);q.fillRect(3,7,3,2);q.fillRect(10,7,3,2);q.fillRect(2,10,2,3);q.fillRect(12,10,2,3);q.fillRect(4,12,8,3);q.fillStyle='#f2c29d';q.fillRect(7,9,2,2);q.fillStyle='#d9d7cb';q.fillRect(6,12,4,1);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:1})}
 function medongJerseyMaterial(back=false){const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.fillStyle='#f2f1e8';q.fillRect(0,0,32,32);q.fillStyle='#74c8ee';for(let x=0;x<32;x+=12)q.fillRect(x,0,7,32);q.fillStyle='#172d4f';q.fillRect(12,0,8,3);q.font=`900 ${back?18:12}px monospace`;q.textAlign='center';q.textBaseline='middle';q.fillText('10',16,back?18:20);q.fillStyle='#d7af37';q.fillRect(14,5,4,3);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.9})}
-const argentinaBlue=new THREE.MeshStandardMaterial({color:0x74c8ee,roughness:.9}),argentinaWhite=new THREE.MeshStandardMaterial({color:0xf2f1e8,roughness:.95}),argentinaNavy=new THREE.MeshStandardMaterial({color:0x162c50,roughness:.9}),medongHair=new THREE.MeshStandardMaterial({color:0x34231d,roughness:1}),medongFront=medongJerseyMaterial(),medongBack=medongJerseyMaterial(true),hunter=new THREE.Group();scene.add(hunter);
+const argentinaBlue=new THREE.MeshStandardMaterial({color:0x74c8ee,roughness:.9}),argentinaWhite=new THREE.MeshStandardMaterial({color:0xf2f1e8,roughness:.95}),argentinaNavy=new THREE.MeshStandardMaterial({color:0x162c50,roughness:.9}),medongHair=new THREE.MeshStandardMaterial({color:0x34231d,roughness:1}),medongFront=medongJerseyMaterial(),medongBack=medongJerseyMaterial(true),hunter=new THREE.Group(),medongRig=new THREE.Group();scene.add(hunter);hunter.add(medongRig);
 const hBody=cube(1.12,1.12,.7,[argentinaBlue,argentinaBlue,argentinaWhite,argentinaNavy,medongFront,medongBack]),hHead=cube(.86,.84,.8,[M.skin,M.skin,medongHair,M.skin,medongFaceMaterial(),M.skin]),hHair=cube(.88,.25,.82,medongHair),hShorts=cube(1.08,.38,.7,argentinaNavy),hLeg1=cube(.42,.7,.46,argentinaWhite),hLeg2=cube(.42,.7,.46,argentinaWhite),hArm1=cube(.31,.96,.37,M.skin),hArm2=cube(.31,.96,.37,M.skin),hShoe1=cube(.45,.2,.6,M.black),hShoe2=hShoe1.clone();
-hBody.position.y=1.45;hHead.position.y=2.3;hHair.position.y=2.67;hShorts.position.y=.88;hLeg1.position.set(-.3,.47,0);hLeg2.position.set(.3,.47,0);hArm1.position.set(-.75,1.48,0);hArm2.position.set(.75,1.48,0);hShoe1.position.set(-.3,.12,.1);hShoe2.position.set(.3,.12,.1);hunter.add(hBody,hHead,hHair,hShorts,hLeg1,hLeg2,hArm1,hArm2,hShoe1,hShoe2);textSprite('★ 10  梅东',0,3.38,0,.38,'#8edcff',hunter);
+hBody.position.y=1.45;hHead.position.y=2.3;hHair.position.y=2.67;hShorts.position.y=.88;hLeg1.position.set(-.3,.47,0);hLeg2.position.set(.3,.47,0);hArm1.position.set(-.75,1.48,0);hArm2.position.set(.75,1.48,0);hShoe1.position.set(-.3,.12,.1);hShoe2.position.set(.3,.12,.1);medongRig.add(hBody,hHead,hHair,hShorts,hLeg1,hLeg2,hArm1,hArm2,hShoe1,hShoe2);const hunterName=textSprite('★ 10  梅东',0,3.38,0,.38,'#8edcff',medongRig);
+const mechFrame=new THREE.Group(),mechLeftArm=new THREE.Group(),mechRightArm=new THREE.Group();hunter.add(mechFrame);mechFrame.visible=false;
+const mechDark=material('metal','#202c34','#61727d'),mechSteel=material('metal','#51616b','#a7bac2'),mechGlass=new THREE.MeshStandardMaterial({color:0x224f62,roughness:.25,metalness:.3,transparent:true,opacity:.72,emissive:0x0d718e,emissiveIntensity:.55}),mechLeftBlue=material('metal','#317ca2','#82dcff',0x12425b),mechRightBlue=material('metal','#317ca2','#82dcff',0x12425b),mechWeak=material('stripe','#d58519','#ffe063',0x8a3c00);
+box(0,1.7,0,2.65,1.65,1.75,mechDark,false,true,mechFrame);box(0,2.55,.08,2.05,1.25,1.35,mechGlass,false,true,mechFrame);box(0,3.28,0,2.5,.22,1.55,mechSteel,false,true,mechFrame);
+for(const x of [-.82,.82]){box(x,.58,0,.75,1.75,.85,mechSteel,false,true,mechFrame);box(x,.12,.2,1.05,.32,1.5,mechDark,false,true,mechFrame)}
+mechLeftArm.position.set(-1.75,2.12,0);mechRightArm.position.set(1.75,2.12,0);mechFrame.add(mechLeftArm,mechRightArm);
+for(const [arm,materialArm,side] of [[mechLeftArm,mechLeftBlue,-1],[mechRightArm,mechRightBlue,1]]){box(0,0,0,1.25,1.05,1.2,materialArm,false,true,arm);box(side*.05,-1,0,.72,1.25,.72,materialArm,false,true,arm);box(side*.05,-1.78,.12,1.05,.55,1.15,mechDark,false,true,arm);box(0,.05,-.66,.55,.55,.18,mechWeak,false,true,arm)}
+box(0,1.62,-.98,1.5,.55,.35,M.hazard,false,true,mechFrame);textSprite('MEDONG MECH',0,4.25,0,.38,'#ffb94d',mechFrame);
+const moneyGunModel=new THREE.Group();moneyGunModel.visible=false;moneyGunModel.position.set(.7,1.42,.28);moneyGunModel.rotation.set(0,0,-.2);hero.add(moneyGunModel);box(0,0,0,.85,.34,.32,M.green,false,true,moneyGunModel);box(.52,0,0,.5,.18,.18,M.metal,false,true,moneyGunModel);box(-.18,-.32,0,.22,.5,.22,M.black,false,true,moneyGunModel);
+const moneyBulletGeometry=new THREE.BoxGeometry(.42,.035,.22),moneyBulletMaterial=new THREE.MeshBasicMaterial({color:0xc9ff65}),moneyBullets=[];
 const hunterWarning=new THREE.Mesh(new THREE.RingGeometry(.9,1.25,16),new THREE.MeshBasicMaterial({color:0xff3b24,transparent:true,opacity:.72,side:THREE.DoubleSide,depthWrite:false}));hunterWarning.rotation.x=-Math.PI/2;hunterWarning.position.y=.035;hunterWarning.visible=false;hunter.add(hunterWarning);hunter.visible=false;
 const encounterStages=[1,3,6,8,9,11,13,15,17,19],lockGates=new Map(),invisible=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
 function makeLockGate(stage){const g=new THREE.Group();g.position.set(0,0,(stage+1)*STAGE_LENGTH-1);world.add(g);for(let x=-6.2;x<=6.2;x+=1.15)box(x,2.2,0,.22,4.4,.22,M.bar,false,true,g);box(0,4.35,0,13.3,.35,.45,M.rust,false,true,g);const collider=box(0,2.2,0,13.4,4.4,.35,invisible,true,false,g);collider.userData.dynamicBounds=true;g.userData={collider,targetY:0,locked:true,stage};lockGates.set(stage,g)}
@@ -186,25 +198,55 @@ function objectBounds(object){
   return bounds;
 }
 
-const state={started:false,won:false,paused:false,pauseStarted:0,wonTime:0,stage:0,start:0,checkpoint:new THREE.Vector3(0,.02,2),velocity:new THREE.Vector3(),grounded:true,coyote:.1,jumpBuffer:0,yaw:0,pitch:.48,cameraDistance:8,keys:{},last:0,attackCooldown:0,attackAnim:0,combo:0,comboTimer:0,invulnerable:0};
-const hunterState={active:false,hp:100,maxHp:100,stage:-1,stun:0,mode:'idle',modeTimer:0,steerSign:1,hitFlash:0,lastUiMode:''};
-const UP=new THREE.Vector3(0,1,0),viewForward=new THREE.Vector3(),viewRight=new THREE.Vector3(),moveDirection=new THREE.Vector3(),oldHeroPosition=new THREE.Vector3(),hunterDelta=new THREE.Vector3(),hunterSide=new THREE.Vector3(),hunterProbe=new THREE.Vector3(),attackDelta=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraDirection=new THREE.Vector3(),cameraCandidates=[];
+const state={started:false,won:false,paused:false,pauseStarted:0,wonTime:0,stage:0,start:0,checkpoint:new THREE.Vector3(0,.02,2),velocity:new THREE.Vector3(),grounded:true,coyote:.1,jumpBuffer:0,yaw:0,pitch:.48,cameraDistance:8,keys:{},last:0,attackCooldown:0,attackAnim:0,combo:0,comboTimer:0,invulnerable:0,moneyGun:false};
+const hunterState={active:false,hp:100,maxHp:100,stage:-1,stun:0,mode:'idle',modeTimer:0,steerSign:1,hitFlash:0,lastUiMode:'',isMech:false,armMaxHp:100,leftArmHp:100,rightArmHp:100};
+const UP=new THREE.Vector3(0,1,0),viewForward=new THREE.Vector3(),viewRight=new THREE.Vector3(),moveDirection=new THREE.Vector3(),oldHeroPosition=new THREE.Vector3(),hunterDelta=new THREE.Vector3(),hunterSide=new THREE.Vector3(),hunterProbe=new THREE.Vector3(),attackDelta=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraDirection=new THREE.Vector3(),cameraCandidates=[],leftArmWorld=new THREE.Vector3(),rightArmWorld=new THREE.Vector3(),aimProjection=new THREE.Vector3(),shotStart=new THREE.Vector3(),shotEnd=new THREE.Vector3();
 let hunterSpawnTimer=0;
-const stageEl=document.querySelector('#stage'),bar=document.querySelector('#bar'),missionEl=document.querySelector('#missionText'),toast=document.querySelector('#toast'),timeEl=document.querySelector('#time'),hunterHud=document.querySelector('#hunterHud'),hunterHp=document.querySelector('#hunterHp'),hunterHpText=document.querySelector('#hunterHpText'),hunterIntent=document.querySelector('#hunterIntent'),attackButton=document.querySelector('#attack'),pauseMenu=document.querySelector('#pauseMenu'),qualitySelect=document.querySelector('#quality'),fpsReadout=document.querySelector('#fpsReadout');
+const stageEl=document.querySelector('#stage'),bar=document.querySelector('#bar'),missionEl=document.querySelector('#missionText'),toast=document.querySelector('#toast'),timeEl=document.querySelector('#time'),hunterHud=document.querySelector('#hunterHud'),hunterTitle=document.querySelector('#hunterTitle'),hunterMainBar=document.querySelector('#hunterMainBar'),hunterHp=document.querySelector('#hunterHp'),hunterHpText=document.querySelector('#hunterHpText'),hunterIntent=document.querySelector('#hunterIntent'),mechArms=document.querySelector('#mechArms'),leftArmHp=document.querySelector('#leftArmHp'),rightArmHp=document.querySelector('#rightArmHp'),weaponHud=document.querySelector('#weaponHud'),aimReticle=document.querySelector('#aimReticle'),attackButton=document.querySelector('#attack'),attackLabel=document.querySelector('#attackLabel'),pauseMenu=document.querySelector('#pauseMenu'),qualitySelect=document.querySelector('#quality'),fpsReadout=document.querySelector('#fpsReadout');
 const QUALITY_KEY='block-break-quality-v1';let qualityMode='auto',autoDegraded=false;try{qualityMode=localStorage.getItem(QUALITY_KEY)||'auto'}catch{}if(!['auto','high','low'].includes(qualityMode))qualityMode='auto';
 function applyQuality(mode=qualityMode,persist=true){qualityMode=mode;activeLowPower=mode==='low'||(mode==='auto'&&(defaultLowPower||autoDegraded));renderer.shadowMap.enabled=!activeLowPower;moon.castShadow=!activeLowPower;renderer.setPixelRatio(Math.min(devicePixelRatio,activeLowPower?1:1.5));renderer.setSize(innerWidth,innerHeight);qualitySelect.value=mode;document.body.dataset.renderQuality=activeLowPower?'low':'high';if(persist)try{localStorage.setItem(QUALITY_KEY,mode)}catch{}}
 function lockGate(stage,on){const g=lockGates.get(stage);if(!g)return;g.userData.locked=on;g.userData.targetY=on?0:5.4;const idx=solids.indexOf(g.userData.collider);if(on&&idx<0)solids.push(g.userData.collider);if(!on&&idx>=0)solids.splice(idx,1)}
 function setHunterBodyGlow(color,intensity=1){for(const mat of hBody.material){mat.emissive.setHex(color);mat.emissiveIntensity=intensity}}
 function updateHunterHud(){hunterHp.style.width=`${Math.max(0,hunterState.hp/hunterState.maxHp*100)}%`;hunterHpText.textContent=`${Math.max(0,hunterState.hp)} / ${hunterState.maxHp}`}
-function updateHunterIntent(force=false){if(!force&&hunterState.lastUiMode===hunterState.mode)return;hunterState.lastUiMode=hunterState.mode;hunterIntent.textContent={alert:'正在锁定目标',chase:'持续追击中',windup:'⚠ 即将发动冲撞',recovery:'攻击落空 · 短暂硬直',stunned:'受创后退',idle:'等待目标'}[hunterState.mode]||'持续追击中';hunterHud.classList.toggle('danger',hunterState.mode==='windup')}
+function updateMechHud(){leftArmHp.style.width=`${Math.max(0,hunterState.leftArmHp/hunterState.armMaxHp*100)}%`;rightArmHp.style.width=`${Math.max(0,hunterState.rightArmHp/hunterState.armMaxHp*100)}%`;hunterHpText.textContent=`${Math.max(0,hunterState.leftArmHp+hunterState.rightArmHp)} ARM HP`}
+function updateHunterIntent(force=false){if(!force&&hunterState.lastUiMode===hunterState.mode)return;hunterState.lastUiMode=hunterState.mode;hunterIntent.textContent=hunterState.isMech&&hunterState.mode==='stunned'?'⚡ 驾驶员眩晕 · 5秒攻击窗口':{alert:'正在锁定目标',chase:'持续追击中',windup:'⚠ 即将发动冲撞',recovery:'攻击落空 · 短暂硬直',stunned:'受创后退',idle:'等待目标'}[hunterState.mode]||'持续追击中';hunterHud.classList.toggle('danger',hunterState.mode==='windup')}
+function configureHunterForm(isMech){
+  hunterState.isMech=isMech;mechFrame.visible=isMech;hunterName.visible=!isMech;
+  if(isMech){medongRig.position.set(0,1.38,-.12);medongRig.scale.setScalar(.72);hLeg1.rotation.x=hLeg2.rotation.x=-1.18;hArm1.rotation.x=hArm2.rotation.x=.72}
+  else{medongRig.position.set(0,0,0);medongRig.scale.setScalar(1);hLeg1.rotation.x=hLeg2.rotation.x=hArm1.rotation.x=hArm2.rotation.x=0}
+}
+function resetMechArms(){hunterState.leftArmHp=hunterState.rightArmHp=hunterState.armMaxHp;for(const arm of [mechLeftArm,mechRightArm]){arm.rotation.set(0,0,0);arm.userData.destroyed=false}updateMechHud()}
+function aimedMechArm(maxScreenDistance=.42){
+  scene.updateMatrixWorld(true);let best=null,bestDistance=maxScreenDistance;
+  for(const [side,arm,hp,target] of [['left',mechLeftArm,hunterState.leftArmHp,leftArmWorld],['right',mechRightArm,hunterState.rightArmHp,rightArmWorld]]){
+    if(hp<=0)continue;arm.getWorldPosition(target);aimProjection.copy(target).project(camera);if(aimProjection.z<0||aimProjection.z>1)continue;
+    const screenDistance=Math.hypot(aimProjection.x,aimProjection.y);if(screenDistance<bestDistance){bestDistance=screenDistance;best={side,arm,world:target.clone()}}
+  }
+  return best
+}
+function spawnMoneyShot(end){const shot=new THREE.Mesh(moneyBulletGeometry,moneyBulletMaterial);shotStart.copy(hero.position).addScaledVector(UP,1.35);shot.position.copy(shotStart);shot.rotation.y=hero.rotation.y;shot.userData={start:shotStart.clone(),end:end.clone(),progress:0};moneyBullets.push(shot);scene.add(shot)}
+function fireMoneyGun(){
+  if(!state.moneyGun){announce('先到绿色武器箱取得钞票枪');return}
+  const target=aimedMechArm();shotStart.copy(hero.position).addScaledVector(UP,1.35);
+  if(!target){camera.getWorldDirection(cameraDirection);spawnMoneyShot(shotEnd.copy(shotStart).addScaledVector(cameraDirection,20));announce('只攻击蓝色机械臂 · 用准星瞄准');beep(220,.06);return}
+  spawnMoneyShot(target.world);const result=damageMechArm(hunterState,target.side,20);hunterState.hitFlash=.18;updateMechHud();beep(result==='hit'?610:820,.09);haptic([18,22,28]);
+  if(result==='arm-destroyed'||result==='defeated'){target.arm.userData.destroyed=true;stunHunter(hunterState,5);updateHunterIntent(true);announce(`${target.side==='left'?'左':'右'}机械臂摧毁 · 梅东眩晕 5 秒`)}
+  else announce(`💵 命中${target.side==='left'?'左':'右'}臂 · 20 DAMAGE`);
+  if(result==='defeated')setTimeout(()=>{if(hunterState.active&&hunterState.isMech&&hunterState.leftArmHp<=0&&hunterState.rightArmHp<=0)defeatHunter()},300)
+}
 function haptic(pattern){if(mobileDevice)navigator.vibrate?.(pattern)}
-function spawnHunter(stage){hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=stage===LAST_STAGE?200:stage>=10?125:stage===9?150:100;hunterState.hitFlash=0;hunterState.lastUiMode='';resetHunterBrain(hunterState);hunter.position.set(stage%2?4:-4,.02,stage*STAGE_LENGTH+16);hunter.visible=true;hunterWarning.visible=false;lockGate(stage,true);hunterHud.classList.remove('hidden');attackButton.classList.remove('hidden');missionEl.textContent=stage===LAST_STAGE?'击败梅东，登上直升机':'击败梅东，解除封锁';updateHunterHud();updateHunterIntent(true);announce(stage===LAST_STAGE?'⚠ 梅东最终封锁！':'⚠ 梅东出现！');haptic([40,35,40])}
-function defeatHunter(){hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;setHunterBodyGlow(0x000000);lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');missionEl.textContent='封锁解除 · 前往下一个检查点';announce('✓ 梅东已被击退 · 封锁解除');beep(920,.28);haptic([30,40,70])}
+function spawnHunter(stage){
+  const isMech=stage===LAST_STAGE,encounterIndex=encounterStages.indexOf(stage);hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=hunterMaxHpForEncounter(encounterIndex);hunterState.hitFlash=0;hunterState.lastUiMode='';configureHunterForm(isMech);resetHunterBrain(hunterState,isMech?2.4:.8);
+  if(isMech){resetMechArms();hunter.position.set(0,.02,stage*STAGE_LENGTH+22);hunterTitle.textContent='⚠ 梅东机甲 · 双臂弱点';hunterMainBar.classList.add('hidden');mechArms.classList.remove('hidden');attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪';aimReticle.classList.toggle('hidden',!state.moneyGun);announce('⚠ 梅东机甲启动 · 只有手臂会受伤！')}
+  else{hunter.position.set(stage%2?4:-4,.02,stage*STAGE_LENGTH+16);hunterTitle.textContent='⚠ 梅东 · 阿根廷10号';hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');attackLabel.textContent='攻击 [F]';aimReticle.classList.add('hidden');missionEl.textContent='击败梅东，解除封锁';updateHunterHud();announce(`⚠ 梅东出现 · 生命 ${hunterState.maxHp}`)}
+  hunter.visible=true;hunterWarning.visible=false;lockGate(stage,true);hunterHud.classList.remove('hidden');attackButton.classList.remove('hidden');updateHunterIntent(true);haptic([40,35,40])
+}
+function defeatHunter(){const wasMech=hunterState.isMech;hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;setHunterBodyGlow(0x000000);lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');aimReticle.classList.add('hidden');weaponHud.classList.add('hidden');moneyGunModel.visible=false;missionEl.textContent=wasMech?'机甲摧毁 · 登上直升机撤离':'封锁解除 · 前往下一个检查点';announce(wasMech?'✓ 两条机械臂已摧毁 · 梅东机甲失效':'✓ 梅东已被击退 · 封锁解除');beep(wasMech?1080:920,wasMech?.42:.28);haptic([30,40,70])}
 function hunterBlocked(position){
   for(const solid of solids){
     if(Math.abs(solid.userData.stageIndex-hunterState.stage)>1)continue;
     const bounds=objectBounds(solid);
-    if(overlapsHorizontal(position,bounds,.58)&&overlapsVertical(position,bounds,2.85))return true;
+    if(overlapsHorizontal(position,bounds,hunterState.isMech?1.35:.58)&&overlapsVertical(position,bounds,hunterState.isMech?4.35:2.85))return true;
   }
   return false;
 }
@@ -218,6 +260,7 @@ function moveHunter(direction,speed,dt){
 }
 function doAttack(){
   if(!state.started||state.won||state.paused||state.attackCooldown>0)return;
+  if(hunterState.active&&hunterState.isMech){state.attackCooldown=.3;state.attackAnim=.12;attackButton.classList.add('cooldown');fireMoneyGun();return}
   state.attackCooldown=.38;state.attackAnim=.24;attackButton.classList.add('cooldown');beep(250,.05);haptic(18);
   if(!hunterState.active)return;
   const delta=attackDelta.copy(hunter.position).sub(hero.position),distance=Math.hypot(delta.x,delta.z);
@@ -233,10 +276,10 @@ function doAttack(){
 function reset(full=false){
   if(full){
     if(hunterSpawnTimer){clearTimeout(hunterSpawnTimer);hunterSpawnTimer=0}
-    state.stage=0;state.start=performance.now();state.checkpoint.set(0,.02,2);state.won=false;state.paused=false;state.invulnerable=0;pauseMenu.classList.add('hidden');state.yaw=0;state.pitch=.48;state.cameraDistance=8;
-    hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');lockGates.forEach((_,s)=>lockGate(s,true));document.querySelector('#win').classList.add('hidden');stageEl.textContent=stageNames[0];bar.style.width=`${100/STAGE_COUNT}%`;missionEl.textContent=missions[0];checkpoints.forEach((c,i)=>setCheckpoint(c,i===0))
+    state.stage=0;state.start=performance.now();state.checkpoint.set(0,.02,2);state.won=false;state.paused=false;state.invulnerable=0;state.moneyGun=false;pauseMenu.classList.add('hidden');state.yaw=0;state.pitch=.48;state.cameraDistance=8;
+    hunterState.active=false;hunterState.mode='idle';configureHunterForm(false);hunter.visible=false;hunterWarning.visible=false;hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');weaponHud.classList.add('hidden');aimReticle.classList.add('hidden');attackButton.classList.add('hidden');attackLabel.textContent='攻击 [F]';moneyGunModel.visible=false;moneyGunPickup.visible=true;for(const shot of moneyBullets)scene.remove(shot);moneyBullets.length=0;lockGates.forEach((_,s)=>lockGate(s,true));document.querySelector('#win').classList.add('hidden');stageEl.textContent=stageNames[0];bar.style.width=`${100/STAGE_COUNT}%`;missionEl.textContent=missions[0];checkpoints.forEach((c,i)=>setCheckpoint(c,i===0))
   }else if(hunterState.active){
-    hunterState.hp=hunterState.maxHp;hunterState.hitFlash=0;resetHunterBrain(hunterState,1);hunter.position.set(hunterState.stage%2?4:-4,.02,hunterState.stage*STAGE_LENGTH+16);hunterWarning.visible=false;lockGate(hunterState.stage,true);updateHunterHud();updateHunterIntent(true)
+    hunterState.hp=hunterState.maxHp;hunterState.hitFlash=0;resetHunterBrain(hunterState,hunterState.isMech?2.4:1);hunter.position.set(hunterState.isMech?0:hunterState.stage%2?4:-4,.02,hunterState.stage*STAGE_LENGTH+(hunterState.isMech?22:16));hunterWarning.visible=false;lockGate(hunterState.stage,true);if(hunterState.isMech){resetMechArms();attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';aimReticle.classList.toggle('hidden',!state.moneyGun);missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪'}else updateHunterHud();updateHunterIntent(true)
   }
   hero.position.copy(state.checkpoint);hero.visible=true;state.velocity.set(0,0,0);state.grounded=true;state.coyote=.1;state.jumpBuffer=0;state.attackCooldown=0;state.attackAnim=0;state.combo=0;state.comboTimer=0;attackButton.classList.remove('cooldown')
 }
@@ -250,6 +293,7 @@ function format(sec){const m=Math.floor(sec/60).toString().padStart(2,'0'),s=Mat
 const BEST_KEY='block-break-best-20-stage-v1',bestEl=document.querySelector('#bestTime');function readBest(){try{return Number(localStorage.getItem(BEST_KEY))||0}catch{return 0}}function showBest(){const best=readBest();bestEl.textContent=best?`20关最佳 ${format(best)}`:'20关最佳 --:--'}function saveBest(sec){const best=readBest();if(!best||sec<best){try{localStorage.setItem(BEST_KEY,String(sec))}catch{}announce('★ 新的20关最佳纪录！')}showBest()}
 function setPaused(on){if(!state.started||state.won)return;if(on&&!state.paused){state.paused=true;state.pauseStarted=performance.now();pauseMenu.classList.remove('hidden');audio.pause()}else if(!on&&state.paused){state.start+=performance.now()-state.pauseStarted;state.paused=false;state.last=performance.now();pauseMenu.classList.add('hidden');audio.resume();announce('▶ 已继续游戏')}}
 const perfState={frames:0,sampleStart:0,fps:60,lowSamples:0};
+function updateMoneyShots(dt){for(let i=moneyBullets.length-1;i>=0;i--){const shot=moneyBullets[i],data=shot.userData;data.progress+=dt*4.8;shot.position.lerpVectors(data.start,data.end,Math.min(1,data.progress));shot.rotation.y+=dt*14;if(data.progress>=1){scene.remove(shot);moneyBullets.splice(i,1)}}}
 function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/1000||0,.035);state.last=t;
   if(state.started&&!state.won&&!state.paused){
     state.attackCooldown=Math.max(0,state.attackCooldown-dt);state.comboTimer=Math.max(0,state.comboTimer-dt);state.invulnerable=Math.max(0,state.invulnerable-dt);if(state.comboTimer===0)state.combo=0;attackButton.classList.toggle('cooldown',state.attackCooldown>0);hero.visible=state.invulnerable<=0||Math.floor(t/85)%2===0;
@@ -275,33 +319,35 @@ function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/10
     if(hero.position.y<=.02){hero.position.y=.02;state.velocity.y=0;state.grounded=true}
     if(dir.lengthSq()>.1){hero.rotation.y=Math.atan2(dir.x,dir.z);const swing=Math.sin(t*.013)*.5;leg1.rotation.x=swing;leg2.rotation.x=-swing;arm1.rotation.x=-swing;arm2.rotation.x=swing}else{leg1.rotation.x*=.75;leg2.rotation.x*=.75;arm1.rotation.x*=.75;arm2.rotation.x*=.75}
     if(state.attackAnim>0){state.attackAnim-=dt;arm1.rotation.x=-1.65;arm2.rotation.x=-1.65}
+    if(state.stage===LAST_STAGE&&!state.moneyGun&&Math.hypot(hero.position.x-moneyGunPickup.position.x,hero.position.z-moneyGunPickup.position.z)<1.55){state.moneyGun=true;moneyGunPickup.visible=false;moneyGunModel.visible=true;weaponHud.classList.remove('hidden');attackLabel.textContent='发射 [F]';missionEl.textContent=hunterState.active?'瞄准并摧毁机甲两条手臂':'钞票枪就绪 · 准备迎战梅东机甲';if(hunterState.active)aimReticle.classList.remove('hidden');announce('💵 已取得钞票枪 · 瞄准蓝色机械臂');beep(760,.18);haptic([25,30,55])}
     if(hunterState.active){
       const chase=hunterDelta.copy(hero.position).sub(hunter.position),verticalGap=Math.abs(chase.y);chase.y=0;const chaseDistance=chase.length(),previousMode=hunterState.mode,event=advanceHunterBrain(hunterState,dt,chaseDistance);
-      if(event==='windup'){announce('⚠ 守卫蓄力冲撞 · 快闪开！');beep(175,.16);haptic([35,35,35])}
-      if(hunterState.mode==='chase'&&chaseDistance>.1){const speed=3.4+hunterState.stage*.1;moveHunter(chase.normalize(),speed,dt)}
+      if(event==='windup'){announce(hunterState.isMech?'⚠ 机甲蓄力冲撞 · 快闪开！':'⚠ 梅东蓄力冲撞 · 快闪开！');beep(175,.16);haptic([35,35,35])}
+      if(hunterState.mode==='chase'&&chaseDistance>.1){const speed=hunterState.isMech?3.05:3.4+hunterState.stage*.1;moveHunter(chase.normalize(),speed,dt)}
       if(event==='strike'){
         beep(95,.18);haptic([70,35,90]);
         if(chaseDistance<HUNTER_STRIKE_RANGE&&verticalGap<1.45)die('被梅东撞倒');else announce('✓ 闪避成功 · 趁现在反击')
       }
       const minZ=hunterState.stage*STAGE_LENGTH+3,maxZ=(hunterState.stage+1)*STAGE_LENGTH-3;hunter.position.x=THREE.MathUtils.clamp(hunter.position.x,-6.5,6.5);hunter.position.z=THREE.MathUtils.clamp(hunter.position.z,minZ,maxZ);hunter.rotation.y=Math.atan2(chase.x,chase.z);
-      hunterState.hitFlash=Math.max(0,hunterState.hitFlash-dt);hunterWarning.visible=hunterState.mode==='windup';if(hunterWarning.visible){const pulse=1+Math.sin(t*.035)*.12;hunterWarning.scale.setScalar(pulse);hunterWarning.material.opacity=.52+Math.sin(t*.04)*.2}
+      hunterState.hitFlash=Math.max(0,hunterState.hitFlash-dt);hunterWarning.visible=hunterState.mode==='windup';if(hunterWarning.visible){const pulse=(hunterState.isMech?1.8:1)*(1+Math.sin(t*.035)*.12);hunterWarning.scale.setScalar(pulse);hunterWarning.material.opacity=.52+Math.sin(t*.04)*.2}
       setHunterBodyGlow(hunterState.hitFlash>0?0xffffff:hunterState.mode==='windup'?0x9a1600:0x000000,hunterState.hitFlash>0?1.4:1);hunterHud.classList.toggle('hit',hunterState.hitFlash>0);
       if(previousMode!==hunterState.mode)updateHunterIntent(true);
-      const hs=Math.sin(t*.015)*.58;if(hunterState.mode==='windup'){hArm1.rotation.x=-1.25;hArm2.rotation.x=-1.25;hLeg1.rotation.x=.35;hLeg2.rotation.x=-.35}else if(hunterState.mode==='recovery'){hArm1.rotation.x=.9;hArm2.rotation.x=.9;hLeg1.rotation.x=-.2;hLeg2.rotation.x=.2}else{hLeg1.rotation.x=hs;hLeg2.rotation.x=-hs;hArm1.rotation.x=-hs;hArm2.rotation.x=hs}
+      const hs=Math.sin(t*.015)*.58;if(hunterState.isMech){hLeg1.rotation.x=hLeg2.rotation.x=-1.18;hArm1.rotation.x=hArm2.rotation.x=.72;const attackTilt=hunterState.mode==='windup'?-.62:Math.sin(t*.006)*.08;mechLeftArm.rotation.x=THREE.MathUtils.lerp(mechLeftArm.rotation.x,mechLeftArm.userData.destroyed?0:attackTilt,.12);mechRightArm.rotation.x=THREE.MathUtils.lerp(mechRightArm.rotation.x,mechRightArm.userData.destroyed?0:attackTilt,.12);mechLeftArm.rotation.z=THREE.MathUtils.lerp(mechLeftArm.rotation.z,mechLeftArm.userData.destroyed?-1.28:0,.1);mechRightArm.rotation.z=THREE.MathUtils.lerp(mechRightArm.rotation.z,mechRightArm.userData.destroyed?1.28:0,.1)}else if(hunterState.mode==='windup'){hArm1.rotation.x=-1.25;hArm2.rotation.x=-1.25;hLeg1.rotation.x=.35;hLeg2.rotation.x=-.35}else if(hunterState.mode==='recovery'){hArm1.rotation.x=.9;hArm2.rotation.x=.9;hLeg1.rotation.x=-.2;hLeg2.rotation.x=.2}else{hLeg1.rotation.x=hs;hLeg2.rotation.x=-hs;hArm1.rotation.x=-hs;hArm2.rotation.x=hs}
     }
+    updateMoneyShots(dt);
     audio.update({moving:dir.lengthSq()>.1,grounded:state.grounded,hunter:hunterState.active,now:t/1000});
     for(const h of hazards){if(Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hit(h,.28)){die('触碰危险机关');break}}
     if(Math.abs(hero.position.x)>7.2||hero.position.y < -3)die();
     // Crossing the front edge of a checkpoint pad activates that respawn point.
     const si=Math.max(0,Math.min(LAST_STAGE,Math.floor((hero.position.z-1)/STAGE_LENGTH)));if(si>state.stage)updateStage(si);
-    if(hero.position.z>FINISH_Z){state.won=true;state.wonTime=(t-state.start)/1000;beep(880,.4);haptic([50,40,100]);document.querySelector('#finalTime').textContent=timeEl.textContent;saveBest(state.wonTime);document.querySelector('#win').classList.remove('hidden')}
+    if(hero.position.z>FINISH_Z&&state.stage===LAST_STAGE&&!hunterState.active){state.won=true;state.wonTime=(t-state.start)/1000;beep(880,.4);haptic([50,40,100]);document.querySelector('#finalTime').textContent=timeEl.textContent;saveBest(state.wonTime);document.querySelector('#win').classList.remove('hidden')}
     timeEl.textContent=format((t-state.start)/1000);
   }
   for(const o of movers){if(o.userData.rotate)o.rotation.y=t*.001*o.userData.speed;else if(o.userData.move==='x')o.position.x=o.userData.base+Math.sin(t*.001*o.userData.speed+o.userData.phase)*o.userData.amp;else o.position.y=o.userData.base+Math.abs(Math.sin(t*.001*o.userData.speed+o.userData.phase))*o.userData.amp}
   checkpoints.forEach((c,i)=>{const active=i<=state.stage;c.userData.beacon.scale.y=1+Math.sin(t*.004+i)*.08;c.userData.marker.material.opacity=active?.95:.35});lamps.forEach((l,i)=>l.material.emissiveIntensity=1.55+Math.sin(t*.006+i)*.18);
   lockGates.forEach(g=>g.position.y=THREE.MathUtils.lerp(g.position.y,g.userData.targetY,.12));
   heli.position.y=3.3+Math.sin(t*.002)*.18;heli.rotation.y=Math.sin(t*.0008)*.08;
-  cameraTarget.copy(hero.position).addScaledVector(UP,1.35);
+  cameraTarget.copy(hero.position).addScaledVector(UP,hunterState.active&&hunterState.isMech&&state.moneyGun?2.05:1.35);
   cameraOffset.set(0,Math.sin(state.pitch)*state.cameraDistance,-Math.cos(state.pitch)*state.cameraDistance).applyAxisAngle(UP,state.yaw);
   cameraDesired.copy(cameraTarget).add(cameraOffset);
   scene.updateMatrixWorld();
@@ -310,7 +356,7 @@ function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/10
   const cameraStage=THREE.MathUtils.clamp(Math.floor(cameraTarget.z/STAGE_LENGTH),0,LAST_STAGE),minCameraX=Math.min(cameraTarget.x,cameraDesired.x)-1,maxCameraX=Math.max(cameraTarget.x,cameraDesired.x)+1,minCameraZ=Math.min(cameraTarget.z,cameraDesired.z)-1,maxCameraZ=Math.max(cameraTarget.z,cameraDesired.z)+1;
   for(const s of solids){if(Math.abs(s.userData.stageIndex-cameraStage)>1)continue;const bounds=objectBounds(s);if(bounds.max.x>=minCameraX&&bounds.min.x<=maxCameraX&&bounds.max.z>=minCameraZ&&bounds.min.z<=maxCameraZ)cameraCandidates.push(s)}
   const obstruction=cameraRay.intersectObjects(cameraCandidates,false)[0];if(obstruction)cameraDesired.copy(cameraTarget).addScaledVector(cameraDirection,Math.max(1.35,obstruction.distance-.35));
-  camera.position.lerp(cameraDesired,1-Math.pow(.0004,dt));camera.lookAt(cameraTarget);renderer.render(scene,camera);
+  camera.position.lerp(cameraDesired,1-Math.pow(.0004,dt));camera.lookAt(cameraTarget);camera.updateMatrixWorld();if(hunterState.active&&hunterState.isMech&&state.moneyGun)aimReticle.classList.toggle('locked',Boolean(aimedMechArm()));else aimReticle.classList.remove('locked');renderer.render(scene,camera);
   if(state.started&&!state.paused&&!state.won){if(!perfState.sampleStart)perfState.sampleStart=t;perfState.frames++;if(t-perfState.sampleStart>=2000){perfState.fps=Math.round(perfState.frames*1000/(t-perfState.sampleStart));fpsReadout.textContent=`${perfState.fps} FPS`;document.body.dataset.fps=String(perfState.fps);if(qualityMode==='auto'&&!defaultLowPower&&!autoDegraded){perfState.lowSamples=perfState.fps<42?perfState.lowSamples+1:0;if(perfState.lowSamples>=2){autoDegraded=true;applyQuality('auto',false);announce('已自动切换为流畅画质')}}perfState.frames=0;perfState.sampleStart=t}}
 }
 
@@ -321,4 +367,5 @@ let touchX=0,touchY=0,jumpTap=false,stickPointerId=null;const stick=document.que
 attackButton.addEventListener('pointerdown',e=>{e.stopPropagation();doAttack()});
 document.querySelector('#play').onclick=()=>{document.querySelector('#start').classList.add('hidden');state.started=true;state.start=performance.now();audio.start();reset(true)};document.querySelector('#reset').onclick=()=>reset(true);document.querySelector('#again').onclick=()=>reset(true);let sound=true;document.querySelector('#sound').onclick=e=>{sound=!sound;audio.setEnabled(sound);e.currentTarget.textContent=sound?'🔊':'🔇'};document.querySelector('#pauseButton').onclick=()=>setPaused(true);document.querySelector('#resume').onclick=()=>setPaused(false);document.querySelector('#pauseRestart').onclick=()=>{reset(true);audio.resume()};qualitySelect.onchange=e=>{autoDegraded=false;perfState.lowSamples=0;applyQuality(e.target.value);announce(`画质：${e.target.selectedOptions[0].text}`)};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.started&&!state.won)setPaused(true)});
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.fov=innerWidth<innerHeight?66:58;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,activeLowPower?1:1.5));renderer.setSize(innerWidth,innerHeight)});applyQuality(qualityMode,false);showBest();reset(true);tick(0);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.fov=innerWidth<innerHeight?66:58;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,activeLowPower?1:1.5));renderer.setSize(innerWidth,innerHeight)});
+applyQuality(qualityMode,false);showBest();reset(true);tick(0);
