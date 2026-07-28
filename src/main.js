@@ -4,6 +4,14 @@ import './combat.css';
 import './responsive.css';
 import './settings.css';
 import {AudioSystem} from './audio.js';
+import {
+  HERO_HEIGHT,
+  HERO_RADIUS,
+  intersectsBody,
+  overlapsHorizontal,
+  overlapsVertical,
+  resolveVerticalSweep,
+} from './collision.js';
 
 const game=document.querySelector('#game');
 const mobileDevice=matchMedia('(pointer:coarse)').matches||innerWidth<700,defaultLowPower=mobileDevice||(navigator.deviceMemory&&navigator.deviceMemory<=4);let activeLowPower=defaultLowPower;
@@ -101,11 +109,27 @@ const skyBlue=new THREE.MeshStandardMaterial({color:0x79cbea,roughness:.9}),blon
 const hBody=cube(1.15,1.25,.7,skyBlue),hHead=cube(.86,.86,.8,[M.skin,M.skin,blond,M.skin,faceMaterial(),M.skin]),hHair=cube(.9,.32,.84,blond),hLeg1=cube(.44,.78,.48,M.white),hLeg2=cube(.44,.78,.48,M.white),hArm1=cube(.32,1.1,.38,M.skin),hArm2=cube(.32,1.1,.38,M.skin),hShoe1=cube(.46,.22,.62,M.black),hShoe2=hShoe1.clone();
 hBody.position.y=1.3;hHead.position.y=2.35;hHair.position.y=2.7;hLeg1.position.set(-.31,.47,0);hLeg2.position.set(.31,.47,0);hArm1.position.set(-.77,1.35,0);hArm2.position.set(.77,1.35,0);hShoe1.position.set(-.31,.12,.1);hShoe2.position.set(.31,.12,.1);hunter.add(hBody,hHead,hHair,hLeg1,hLeg2,hArm1,hArm2,hShoe1,hShoe2);textSprite('★ 9',0,3.45,0,.34,'#69d5ff',hunter);hunter.visible=false;
 const encounterStages=[1,3,6,8,9],lockGates=new Map(),invisible=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
-function makeLockGate(stage){const g=new THREE.Group();g.position.set(0,0,(stage+1)*30-1);world.add(g);for(let x=-6.2;x<=6.2;x+=1.15)box(x,2.2,0,.22,4.4,.22,M.bar,false,true,g);box(0,4.35,0,13.3,.35,.45,M.rust,false,true,g);const collider=box(0,2.2,0,13.4,4.4,.35,invisible,true,false,g);g.userData={collider,targetY:0,locked:true,stage};lockGates.set(stage,g)}
+function makeLockGate(stage){const g=new THREE.Group();g.position.set(0,0,(stage+1)*30-1);world.add(g);for(let x=-6.2;x<=6.2;x+=1.15)box(x,2.2,0,.22,4.4,.22,M.bar,false,true,g);box(0,4.35,0,13.3,.35,.45,M.rust,false,true,g);const collider=box(0,2.2,0,13.4,4.4,.35,invisible,true,false,g);collider.userData.dynamicBounds=true;g.userData={collider,targetY:0,locked:true,stage};lockGates.set(stage,g)}
 encounterStages.forEach(makeLockGate);
+
+const boundsCache=new WeakMap(),stagePosition=new THREE.Vector3();
+scene.updateMatrixWorld(true);
+for(const object of [...solids,...hazards]){
+  object.getWorldPosition(stagePosition);
+  object.userData.stageIndex=THREE.MathUtils.clamp(Math.floor(stagePosition.z/30),0,9);
+}
+function objectBounds(object){
+  let bounds=boundsCache.get(object);
+  if(!bounds){bounds=new THREE.Box3();boundsCache.set(object,bounds)}
+  const dynamic=object.userData.dynamicBounds||object.userData.move||object.parent?.userData.rotate;
+  if(dynamic||!object.userData.boundsReady){bounds.setFromObject(object);object.userData.boundsReady=true}
+  return bounds;
+}
 
 const state={started:false,won:false,paused:false,pauseStarted:0,wonTime:0,stage:0,start:0,checkpoint:new THREE.Vector3(0,.02,2),velocity:new THREE.Vector3(),grounded:true,coyote:.1,jumpBuffer:0,yaw:0,pitch:.48,cameraDistance:8,keys:{},last:0};
 const hunterState={active:false,hp:100,maxHp:100,stage:-1,stun:0,attackCooldown:0,attackAnim:0};
+const UP=new THREE.Vector3(0,1,0),viewForward=new THREE.Vector3(),viewRight=new THREE.Vector3(),moveDirection=new THREE.Vector3(),oldHeroPosition=new THREE.Vector3(),hunterDelta=new THREE.Vector3(),attackDelta=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraDirection=new THREE.Vector3(),cameraCandidates=[];
+let hunterSpawnTimer=0;
 const stageEl=document.querySelector('#stage'),bar=document.querySelector('#bar'),missionEl=document.querySelector('#missionText'),toast=document.querySelector('#toast'),timeEl=document.querySelector('#time'),hunterHud=document.querySelector('#hunterHud'),hunterHp=document.querySelector('#hunterHp'),hunterHpText=document.querySelector('#hunterHpText'),attackButton=document.querySelector('#attack'),pauseMenu=document.querySelector('#pauseMenu'),qualitySelect=document.querySelector('#quality'),fpsReadout=document.querySelector('#fpsReadout');
 const QUALITY_KEY='block-break-quality-v1';let qualityMode='auto',autoDegraded=false;try{qualityMode=localStorage.getItem(QUALITY_KEY)||'auto'}catch{}if(!['auto','high','low'].includes(qualityMode))qualityMode='auto';
 function applyQuality(mode=qualityMode,persist=true){qualityMode=mode;activeLowPower=mode==='low'||(mode==='auto'&&(defaultLowPower||autoDegraded));renderer.shadowMap.enabled=!activeLowPower;moon.castShadow=!activeLowPower;renderer.setPixelRatio(Math.min(devicePixelRatio,activeLowPower?1:1.5));renderer.setSize(innerWidth,innerHeight);qualitySelect.value=mode;document.body.dataset.renderQuality=activeLowPower?'low':'high';if(persist)try{localStorage.setItem(QUALITY_KEY,mode)}catch{}}
@@ -114,13 +138,13 @@ function updateHunterHud(){hunterHp.style.width=`${Math.max(0,hunterState.hp/hun
 function haptic(pattern){if(mobileDevice)navigator.vibrate?.(pattern)}
 function spawnHunter(stage){hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=stage===9?150:100;hunterState.stun=.8;hunter.position.set(stage%2?4:-4,.02,stage*30+16);hunter.visible=true;lockGate(stage,true);hunterHud.classList.remove('hidden');attackButton.classList.remove('hidden');missionEl.textContent=stage===9?'击败 9 号追击者，登上直升机':'击败 9 号追击者，解除封锁';updateHunterHud();announce('⚠ 9号追击者出现！');haptic([40,35,40])}
 function defeatHunter(){hunterState.active=false;hunter.visible=false;lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');attackButton.classList.add('hidden');missionEl.textContent='封锁解除 · 前往下一个检查点';announce('✓ 追击者已被击退 · 封锁解除');beep(920,.28);haptic([30,40,70])}
-function doAttack(){if(!state.started||state.won||state.paused)return;hunterState.attackAnim=.24;beep(250,.05);haptic(18);if(!hunterState.active)return;const delta=hunter.position.clone().sub(hero.position),distance=Math.hypot(delta.x,delta.z);if(distance>3.9){announce('距离太远');return}hunterState.hp-=25;hunterState.stun=.45;delta.y=0;if(delta.lengthSq())hunter.position.add(delta.normalize().multiplyScalar(.4));updateHunterHud();beep(520,.08);haptic(35);if(hunterState.hp<=0)defeatHunter()}
-function reset(full=false){if(full){state.stage=0;state.start=performance.now();state.checkpoint.set(0,.02,2);state.won=false;state.paused=false;pauseMenu.classList.add('hidden');state.yaw=0;state.pitch=.48;state.cameraDistance=8;hunterState.active=false;hunter.visible=false;hunterHud.classList.add('hidden');attackButton.classList.add('hidden');lockGates.forEach((_,s)=>lockGate(s,true));document.querySelector('#win').classList.add('hidden');stageEl.textContent=stageNames[0];bar.style.width='10%';missionEl.textContent=missions[0];checkpoints.forEach((c,i)=>setCheckpoint(c,i===0))}else if(hunterState.active){hunterState.hp=hunterState.maxHp;hunterState.stun=1;hunter.position.set(hunterState.stage%2?4:-4,.02,hunterState.stage*30+16);lockGate(hunterState.stage,true);updateHunterHud()}hero.position.copy(state.checkpoint);state.velocity.set(0,0,0);state.grounded=true;state.coyote=.1;state.jumpBuffer=0}
+function doAttack(){if(!state.started||state.won||state.paused)return;hunterState.attackAnim=.24;beep(250,.05);haptic(18);if(!hunterState.active)return;const delta=attackDelta.copy(hunter.position).sub(hero.position),distance=Math.hypot(delta.x,delta.z);if(distance>3.9){announce('距离太远');return}hunterState.hp-=25;hunterState.stun=.45;delta.y=0;if(delta.lengthSq())hunter.position.add(delta.normalize().multiplyScalar(.4));updateHunterHud();beep(520,.08);haptic(35);if(hunterState.hp<=0)defeatHunter()}
+function reset(full=false){if(full){if(hunterSpawnTimer){clearTimeout(hunterSpawnTimer);hunterSpawnTimer=0}state.stage=0;state.start=performance.now();state.checkpoint.set(0,.02,2);state.won=false;state.paused=false;pauseMenu.classList.add('hidden');state.yaw=0;state.pitch=.48;state.cameraDistance=8;hunterState.active=false;hunter.visible=false;hunterHud.classList.add('hidden');attackButton.classList.add('hidden');lockGates.forEach((_,s)=>lockGate(s,true));document.querySelector('#win').classList.add('hidden');stageEl.textContent=stageNames[0];bar.style.width='10%';missionEl.textContent=missions[0];checkpoints.forEach((c,i)=>setCheckpoint(c,i===0))}else if(hunterState.active){hunterState.hp=hunterState.maxHp;hunterState.stun=1;hunter.position.set(hunterState.stage%2?4:-4,.02,hunterState.stage*30+16);lockGate(hunterState.stage,true);updateHunterHud()}hero.position.copy(state.checkpoint);state.velocity.set(0,0,0);state.grounded=true;state.coyote=.1;state.jumpBuffer=0}
 function setCheckpoint(c,on){for(const k of ['pad','rim','beacon','flag'])c.userData[k].material=on?M.green:M.greenOff}
 function beep(freq=440,duration=.09){audio.tone(freq,duration)}
 function announce(s){toast.textContent=s;toast.classList.add('show');clearTimeout(announce.t);announce.t=setTimeout(()=>toast.classList.remove('show'),1200)}
-function updateStage(i){if(i<=state.stage)return;state.stage=i;state.checkpoint.set(0,.02,i*30+2);stageEl.textContent=stageNames[i];bar.style.width=`${(i+1)*10}%`;missionEl.textContent=missions[i];checkpoints.forEach((c,k)=>setCheckpoint(c,k<=i));announce(`⚑ 检查点 ${i+1} 已激活`);beep(740,.15);haptic(45);if(encounterStages.includes(i))setTimeout(()=>spawnHunter(i),350)}
-function hit(obj,pad=.5){const b=new THREE.Box3().setFromObject(obj),p=hero.position;return p.x>b.min.x-pad&&p.x<b.max.x+pad&&p.z>b.min.z-pad&&p.z<b.max.z+pad&&p.y+1.65>b.min.y&&p.y<b.max.y+.15}
+function updateStage(i){if(i<=state.stage)return;state.stage=i;state.checkpoint.set(0,.02,i*30+2);stageEl.textContent=stageNames[i];bar.style.width=`${(i+1)*10}%`;missionEl.textContent=missions[i];checkpoints.forEach((c,k)=>setCheckpoint(c,k<=i));announce(`⚑ 检查点 ${i+1} 已激活`);beep(740,.15);haptic(45);if(encounterStages.includes(i)){if(hunterSpawnTimer)clearTimeout(hunterSpawnTimer);hunterSpawnTimer=setTimeout(()=>{hunterSpawnTimer=0;if(state.started&&!state.won&&state.stage===i)spawnHunter(i)},350)}}
+function hit(obj,pad=.5){return intersectsBody(hero.position,objectBounds(obj),pad)}
 function die(){announce('✖ 被抓住了 · 返回检查点');beep(120,.24);haptic([90,50,90]);reset()}
 function format(sec){const m=Math.floor(sec/60).toString().padStart(2,'0'),s=Math.floor(sec%60).toString().padStart(2,'0');return `${m}:${s}`}
 const BEST_KEY='block-break-best-v1',bestEl=document.querySelector('#bestTime');function readBest(){try{return Number(localStorage.getItem(BEST_KEY))||0}catch{return 0}}function showBest(){const best=readBest();bestEl.textContent=best?`最佳纪录 ${format(best)}`:'最佳纪录 --:--'}function saveBest(sec){const best=readBest();if(!best||sec<best){try{localStorage.setItem(BEST_KEY,String(sec))}catch{}announce('★ 新的最佳纪录！')}showBest()}
@@ -129,24 +153,36 @@ const perfState={frames:0,sampleStart:0,fps:60,lowSamples:0};
 function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/1000||0,.035);state.last=t;
   if(state.started&&!state.won&&!state.paused){
     const f=(state.keys.KeyW||state.keys.ArrowUp?1:0)-(state.keys.KeyS||state.keys.ArrowDown?1:0)+touchY,r=(state.keys.KeyD||state.keys.ArrowRight?1:0)-(state.keys.KeyA||state.keys.ArrowLeft?1:0)+touchX;
-    const viewForward=new THREE.Vector3();camera.getWorldDirection(viewForward);viewForward.y=0;if(viewForward.lengthSq()<.001)viewForward.set(0,0,1);viewForward.normalize();const viewRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),viewForward).normalize();
-    const dir=viewForward.multiplyScalar(f).add(viewRight.multiplyScalar(r));if(dir.length()>1)dir.normalize();state.velocity.x=dir.x*7.2;state.velocity.z=dir.z*7.2;
+    camera.getWorldDirection(viewForward);viewForward.y=0;if(viewForward.lengthSq()<.001)viewForward.set(0,0,1);viewForward.normalize();viewRight.crossVectors(UP,viewForward).normalize();
+    const dir=moveDirection.copy(viewForward).multiplyScalar(f).addScaledVector(viewRight,r);if(dir.length()>1)dir.normalize();state.velocity.x=dir.x*7.2;state.velocity.z=dir.z*7.2;
     if(jumpTap){state.jumpBuffer=.15;jumpTap=false}state.jumpBuffer=Math.max(0,state.jumpBuffer-dt);state.coyote=state.grounded ? .11 : Math.max(0,state.coyote-dt);
     if(state.jumpBuffer>0&&state.coyote>0){state.velocity.y=10;state.grounded=false;state.coyote=0;state.jumpBuffer=0;beep(320,.055)}
-    state.velocity.y-=22*dt;const old=hero.position.clone();hero.position.addScaledVector(state.velocity,dt);state.grounded=false;
+    state.velocity.y-=22*dt;oldHeroPosition.copy(hero.position);const nearbyStage=THREE.MathUtils.clamp(Math.floor(hero.position.z/30),0,9);
+    hero.position.x+=state.velocity.x*dt;hero.position.z+=state.velocity.z*dt;
+    for(const s of solids){
+      if(Math.abs(s.userData.stageIndex-nearbyStage)>1)continue;
+      const bounds=objectBounds(s);
+      if(overlapsHorizontal(hero.position,bounds,HERO_RADIUS)&&overlapsVertical(hero.position,bounds,HERO_HEIGHT)){hero.position.x=oldHeroPosition.x;hero.position.z=oldHeroPosition.z;break}
+    }
+    const previousY=hero.position.y;hero.position.y+=state.velocity.y*dt;state.grounded=false;
+    for(const s of solids){
+      if(Math.abs(s.userData.stageIndex-nearbyStage)>1)continue;
+      const bounds=objectBounds(s);if(!overlapsHorizontal(hero.position,bounds,HERO_RADIUS))continue;
+      const resolved=resolveVerticalSweep(previousY,hero.position.y,state.velocity.y,bounds,HERO_HEIGHT);
+      if(resolved){hero.position.y=resolved.y;state.velocity.y=resolved.velocityY;state.grounded=resolved.grounded;break}
+    }
     if(hero.position.y<=.02){hero.position.y=.02;state.velocity.y=0;state.grounded=true}
-    for(const s of solids)if(hit(s,.4)){const b=new THREE.Box3().setFromObject(s);if(old.y>=b.max.y-.13&&state.velocity.y<=0){hero.position.y=b.max.y;state.velocity.y=0;state.grounded=true}else{hero.position.x=old.x;hero.position.z=old.z}}
     if(dir.lengthSq()>.1){hero.rotation.y=Math.atan2(dir.x,dir.z);const swing=Math.sin(t*.013)*.5;leg1.rotation.x=swing;leg2.rotation.x=-swing;arm1.rotation.x=-swing;arm2.rotation.x=swing}else{leg1.rotation.x*=.75;leg2.rotation.x*=.75;arm1.rotation.x*=.75;arm2.rotation.x*=.75}
     if(hunterState.attackAnim>0){hunterState.attackAnim-=dt;arm1.rotation.x=-1.65;arm2.rotation.x=-1.65}
     if(hunterState.active){
-      hunterState.stun=Math.max(0,hunterState.stun-dt);const chase=hero.position.clone().sub(hunter.position);chase.y=0;const chaseDistance=chase.length();
+      hunterState.stun=Math.max(0,hunterState.stun-dt);const chase=hunterDelta.copy(hero.position).sub(hunter.position);chase.y=0;const chaseDistance=chase.length();
       if(hunterState.stun<=0&&chaseDistance>1.05){const speed=3.4+hunterState.stage*.1;hunter.position.addScaledVector(chase.normalize(),speed*dt)}
       hunter.position.x=THREE.MathUtils.clamp(hunter.position.x,-6.7,6.7);hunter.rotation.y=Math.atan2(chase.x,chase.z);
       const hs=Math.sin(t*.015)*.58;hLeg1.rotation.x=hs;hLeg2.rotation.x=-hs;hArm1.rotation.x=-hs;hArm2.rotation.x=hs;
       if(chaseDistance<1.15)die();
     }
     audio.update({moving:dir.lengthSq()>.1,grounded:state.grounded,hunter:hunterState.active,now:t/1000});
-    for(const h of hazards)if(hit(h,.28)){die();break}
+    for(const h of hazards){if(Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hit(h,.28)){die();break}}
     if(Math.abs(hero.position.x)>7.2||hero.position.y < -3)die();
     // Crossing the front edge of a checkpoint pad activates that respawn point.
     const si=Math.max(0,Math.min(9,Math.floor((hero.position.z-1)/30)));if(si>state.stage)updateStage(si);
@@ -157,16 +193,23 @@ function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/10
   checkpoints.forEach((c,i)=>{const active=i<=state.stage;c.userData.beacon.scale.y=1+Math.sin(t*.004+i)*.08;c.userData.marker.material.opacity=active?.95:.35});lamps.forEach((l,i)=>l.material.emissiveIntensity=1.55+Math.sin(t*.006+i)*.18);
   lockGates.forEach(g=>g.position.y=THREE.MathUtils.lerp(g.position.y,g.userData.targetY,.12));
   heli.position.y=3.3+Math.sin(t*.002)*.18;heli.rotation.y=Math.sin(t*.0008)*.08;
-  const target=hero.position.clone().add(new THREE.Vector3(0,1.35,0)),offset=new THREE.Vector3(0,Math.sin(state.pitch)*state.cameraDistance,-Math.cos(state.pitch)*state.cameraDistance).applyAxisAngle(new THREE.Vector3(0,1,0),state.yaw),desired=target.clone().add(offset);
-  scene.updateMatrixWorld();const cameraDirection=desired.clone().sub(target),cameraLength=cameraDirection.length();cameraDirection.normalize();cameraRay.set(target,cameraDirection);cameraRay.far=cameraLength;const obstruction=cameraRay.intersectObjects(solids,false)[0];if(obstruction)desired.copy(target).addScaledVector(cameraDirection,Math.max(1.35,obstruction.distance-.35));
-  camera.position.lerp(desired,1-Math.pow(.0004,dt));camera.lookAt(target);renderer.render(scene,camera);
+  cameraTarget.copy(hero.position).addScaledVector(UP,1.35);
+  cameraOffset.set(0,Math.sin(state.pitch)*state.cameraDistance,-Math.cos(state.pitch)*state.cameraDistance).applyAxisAngle(UP,state.yaw);
+  cameraDesired.copy(cameraTarget).add(cameraOffset);
+  scene.updateMatrixWorld();
+  cameraDirection.copy(cameraDesired).sub(cameraTarget);const cameraLength=cameraDirection.length();cameraDirection.normalize();cameraRay.set(cameraTarget,cameraDirection);cameraRay.far=cameraLength;
+  cameraCandidates.length=0;
+  const cameraStage=THREE.MathUtils.clamp(Math.floor(cameraTarget.z/30),0,9),minCameraX=Math.min(cameraTarget.x,cameraDesired.x)-1,maxCameraX=Math.max(cameraTarget.x,cameraDesired.x)+1,minCameraZ=Math.min(cameraTarget.z,cameraDesired.z)-1,maxCameraZ=Math.max(cameraTarget.z,cameraDesired.z)+1;
+  for(const s of solids){if(Math.abs(s.userData.stageIndex-cameraStage)>1)continue;const bounds=objectBounds(s);if(bounds.max.x>=minCameraX&&bounds.min.x<=maxCameraX&&bounds.max.z>=minCameraZ&&bounds.min.z<=maxCameraZ)cameraCandidates.push(s)}
+  const obstruction=cameraRay.intersectObjects(cameraCandidates,false)[0];if(obstruction)cameraDesired.copy(cameraTarget).addScaledVector(cameraDirection,Math.max(1.35,obstruction.distance-.35));
+  camera.position.lerp(cameraDesired,1-Math.pow(.0004,dt));camera.lookAt(cameraTarget);renderer.render(scene,camera);
   if(state.started&&!state.paused&&!state.won){if(!perfState.sampleStart)perfState.sampleStart=t;perfState.frames++;if(t-perfState.sampleStart>=2000){perfState.fps=Math.round(perfState.frames*1000/(t-perfState.sampleStart));fpsReadout.textContent=`${perfState.fps} FPS`;document.body.dataset.fps=String(perfState.fps);if(qualityMode==='auto'&&!defaultLowPower&&!autoDegraded){perfState.lowSamples=perfState.fps<42?perfState.lowSamples+1:0;if(perfState.lowSamples>=2){autoDegraded=true;applyQuality('auto',false);announce('已自动切换为流畅画质')}}perfState.frames=0;perfState.sampleStart=t}}
 }
 
 const cameraRay=new THREE.Raycaster();
 addEventListener('keydown',e=>{state.keys[e.code]=true;if(e.code==='Escape'&&!e.repeat)setPaused(!state.paused);if(e.code==='Space'&&!e.repeat)state.jumpBuffer=.15;if(e.code==='KeyF'&&!e.repeat)doAttack();if(e.code==='KeyC'){state.yaw=hero.rotation.y;state.pitch=.48;state.cameraDistance=8}if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()});addEventListener('keyup',e=>state.keys[e.code]=false);
-let dragging=false,lastX=0,lastY=0,dragDistance=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;dragDistance=0;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(dragging&&!stickActive){const dx=e.clientX-lastX,dy=e.clientY-lastY;dragDistance+=Math.abs(dx)+Math.abs(dy);state.yaw-=dx*.006;state.pitch=THREE.MathUtils.clamp(state.pitch+dy*.004,.12,1.05);lastX=e.clientX;lastY=e.clientY}});const endCameraDrag=e=>{if(dragging&&e.type==='pointerup'&&dragDistance<6&&hunterState.active)doAttack();dragging=false;renderer.domElement.releasePointerCapture?.(e.pointerId)};renderer.domElement.addEventListener('pointerup',endCameraDrag);renderer.domElement.addEventListener('pointercancel',endCameraDrag);renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();state.cameraDistance=THREE.MathUtils.clamp(state.cameraDistance+Math.sign(e.deltaY)*.65,4.5,10.5)},{passive:false});renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-let touchX=0,touchY=0,jumpTap=false,stickActive=false;const stick=document.querySelector('#stick'),knob=stick.querySelector('i');function stickMove(e){const b=stick.getBoundingClientRect(),x=e.clientX-(b.left+b.width/2),y=e.clientY-(b.top+b.height/2),l=Math.max(1,Math.hypot(x,y)),q=Math.min(34,l);touchX=x/l*q/34;touchY=-y/l*q/34;knob.style.transform=`translate(${touchX*34}px,${-touchY*34}px)`}stick.addEventListener('pointerdown',e=>{stickActive=true;stick.setPointerCapture(e.pointerId);stickMove(e)});stick.addEventListener('pointermove',e=>{if(stickActive)stickMove(e)});const releaseStick=()=>{stickActive=false;touchX=touchY=0;knob.style.transform=''};stick.addEventListener('pointerup',releaseStick);stick.addEventListener('pointercancel',releaseStick);document.querySelector('#jump').addEventListener('pointerdown',e=>{e.stopPropagation();jumpTap=true});
+let cameraPointerId=null,lastX=0,lastY=0,dragDistance=0;renderer.domElement.addEventListener('pointerdown',e=>{if(cameraPointerId!==null)return;cameraPointerId=e.pointerId;dragDistance=0;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(e.pointerId===cameraPointerId){const dx=e.clientX-lastX,dy=e.clientY-lastY;dragDistance+=Math.abs(dx)+Math.abs(dy);state.yaw-=dx*.006;state.pitch=THREE.MathUtils.clamp(state.pitch+dy*.004,.12,1.05);lastX=e.clientX;lastY=e.clientY}});const endCameraDrag=e=>{if(e.pointerId!==cameraPointerId)return;if(e.type==='pointerup'&&dragDistance<6&&hunterState.active)doAttack();cameraPointerId=null;renderer.domElement.releasePointerCapture?.(e.pointerId)};renderer.domElement.addEventListener('pointerup',endCameraDrag);renderer.domElement.addEventListener('pointercancel',endCameraDrag);renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();state.cameraDistance=THREE.MathUtils.clamp(state.cameraDistance+Math.sign(e.deltaY)*.65,4.5,10.5)},{passive:false});renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+let touchX=0,touchY=0,jumpTap=false,stickPointerId=null;const stick=document.querySelector('#stick'),knob=stick.querySelector('i');function stickMove(e){const b=stick.getBoundingClientRect(),x=e.clientX-(b.left+b.width/2),y=e.clientY-(b.top+b.height/2),l=Math.max(1,Math.hypot(x,y)),q=Math.min(34,l);touchX=x/l*q/34;touchY=-y/l*q/34;knob.style.transform=`translate(${touchX*34}px,${-touchY*34}px)`}stick.addEventListener('pointerdown',e=>{if(stickPointerId!==null)return;stickPointerId=e.pointerId;stick.setPointerCapture(e.pointerId);stickMove(e)});stick.addEventListener('pointermove',e=>{if(e.pointerId===stickPointerId)stickMove(e)});const releaseStick=e=>{if(e.pointerId!==stickPointerId)return;stickPointerId=null;touchX=touchY=0;knob.style.transform=''};stick.addEventListener('pointerup',releaseStick);stick.addEventListener('pointercancel',releaseStick);document.querySelector('#jump').addEventListener('pointerdown',e=>{e.stopPropagation();jumpTap=true});
 attackButton.addEventListener('pointerdown',e=>{e.stopPropagation();doAttack()});
 document.querySelector('#play').onclick=()=>{document.querySelector('#start').classList.add('hidden');state.started=true;state.start=performance.now();audio.start();reset(true)};document.querySelector('#reset').onclick=()=>reset(true);document.querySelector('#again').onclick=()=>reset(true);let sound=true;document.querySelector('#sound').onclick=e=>{sound=!sound;audio.setEnabled(sound);e.currentTarget.textContent=sound?'🔊':'🔇'};document.querySelector('#pauseButton').onclick=()=>setPaused(true);document.querySelector('#resume').onclick=()=>setPaused(false);document.querySelector('#pauseRestart').onclick=()=>{reset(true);audio.resume()};qualitySelect.onchange=e=>{autoDegraded=false;perfState.lowSamples=0;applyQuality(e.target.value);announce(`画质：${e.target.selectedOptions[0].text}`)};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.started&&!state.won)setPaused(true)});

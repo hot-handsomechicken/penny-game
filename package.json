@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "audit:levels": "node scripts/level-audit.mjs"
+    "audit:levels": "node scripts/level-audit.mjs",
+    "audit:collision": "node scripts/collision-audit.mjs",
+    "test": "pnpm run audit:levels && pnpm run audit:collision"
   },
   "dependencies": {
     "three": "^0.178.0",
