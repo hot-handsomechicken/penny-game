@@ -8,7 +8,9 @@
     "build": "vite build",
     "audit:levels": "node scripts/level-audit.mjs",
     "audit:collision": "node scripts/collision-audit.mjs",
-    "test": "pnpm run audit:levels && pnpm run audit:collision"
+    "audit:hunter": "node scripts/hunter-ai-audit.mjs",
+    "audit:progression": "node scripts/progression-audit.mjs",
+    "test": "pnpm run audit:levels && pnpm run audit:collision && pnpm run audit:hunter && pnpm run audit:progression"
   },
   "dependencies": {
     "three": "^0.178.0",
