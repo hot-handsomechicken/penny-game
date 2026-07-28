@@ -31,7 +31,7 @@ assert.deepEqual(combo,[24,28,34]);
 assert.ok(combo.reduce((sum,damage)=>sum+damage,0)<100);
 assert.ok(combo.reduce((sum,damage)=>sum+damage,0)+comboDamage(1)>=100);
 
-const encounters=[1,3,6,8,9];
+const encounters=[1,3,6,8,9,11,13,15,17,19];
 for(const stage of encounters){
   const checkpoint=stage*30+2,spawn=stage*30+16,gate=(stage+1)*30-1;
   assert.ok(checkpoint<spawn&&spawn<gate,`第 ${stage+1} 关追击区顺序错误`);
@@ -40,4 +40,4 @@ for(const stage of encounters){
 
 console.log('PASS  追击者预警、蓄力、攻击与恢复状态');
 console.log('PASS  受击眩晕可正确打断追击动作');
-console.log('PASS  连击伤害与五个追击关卡反应距离合理');
+console.log('PASS  连击伤害与十个追击关卡反应距离合理');

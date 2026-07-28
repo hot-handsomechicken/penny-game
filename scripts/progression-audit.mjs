@@ -13,7 +13,17 @@ const stages=[
   {name:'通风管道',type:'route',clearance:1.25},
   {name:'放风操场',type:'gap',gapWidth:1.44},
   {name:'警戒屋顶',type:'lane',obstacleWidth:3},
-  {name:'撤离点',type:'timed-jump',obstacleTop:.675},
+  {name:'假撤离点',type:'timed-jump',obstacleTop:.675},
+  {name:'档案禁区',type:'lane',obstacleWidth:4.2},
+  {name:'证物仓库',type:'route',clearance:1.3},
+  {name:'低温冷库',type:'lane',obstacleWidth:3.1},
+  {name:'维修竖井',type:'jump',obstacleTop:.695},
+  {name:'守卫营房',type:'jump',obstacleTop:.69},
+  {name:'押运车库',type:'lane',obstacleWidth:3.6},
+  {name:'外圈排水渠',type:'route',clearance:1.3},
+  {name:'探照灯广场',type:'jump',obstacleTop:.66},
+  {name:'外墙脚手架',type:'route',clearance:1.25},
+  {name:'最终停机坪',type:'timed-jump',obstacleTop:.675},
 ];
 
 for(const [index,stage] of stages.entries()){
@@ -26,5 +36,5 @@ for(const [index,stage] of stages.entries()){
   console.log(`PASS  ${(index+1).toString().padStart(2,'0')} ${stage.name.padEnd(7)} 关键通路可行`);
 }
 
-assert.ok(player.speed>4.3,'最终关追击者速度不应超过玩家');
-console.log(`PASS  十关检查点顺序、关键通路与最终追击速度`);
+assert.ok(player.speed>5.3,'最终关追击者速度不应超过玩家');
+console.log(`PASS  二十关检查点顺序、关键通路与最终追击速度`);
