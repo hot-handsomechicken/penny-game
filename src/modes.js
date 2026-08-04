@@ -7,17 +7,25 @@ export const STAR_FACE_TEXTURE_SIZE=64;
 export const STAR_FACE_STYLE='dot-eyes-smile';
 
 export const RESCUE_PLAYERS=[
-  {name:'B罗',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd09a72,hair:0x190d07,style:'swept-forelock',faceWidth:.75,faceHeight:.74}},
-  {name:'小狐狸',country:'葡萄牙',team:'portugal',number:11,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd8a17b,hair:0x211109,style:'fluffy-curls',faceWidth:.71,faceHeight:.76}},
-  {name:'外马尔',country:'巴西',team:'brazil',number:10,color:0xf2d52b,accent:0x158447,shortsColor:0x2455a4,appearance:{skin:0xb97955,hair:0x55351f,style:'spiky-highlight-crop',faceWidth:.72,faceHeight:.73}},
-  {name:'黄金小兔兔',country:'克罗地亚',team:'croatia',number:10,color:0xf2f2ed,accent:0xd6293b,shortsColor:0x173f77,appearance:{skin:0xe0ae86,hair:0x8f6738,hairAccent:0x684623,style:'dark-golden-pageboy',faceWidth:.68,faceHeight:.82}},
-  {name:'姆久佩',country:'法国',team:'france',number:10,color:0x173d78,accent:0xd5263a,shortsColor:0x132c57,appearance:{skin:0x8b573e,hair:0x090909,style:'close-crop',faceWidth:.77,faceHeight:.72}},
-  {name:'朱古力',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0x7e503a,hair:0x1d0f08,style:'rounded-curly-top',faceWidth:.74,faceHeight:.76}},
-  {name:'哈哈哈',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54,appearance:{skin:0xe5bb98,hair:0xefd2a5,style:'short-blond-brush',faceWidth:.73,faceHeight:.82}},
-  {name:'小孩哥',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70,appearance:{skin:0x9e6549,hair:0x918979,hairAccent:0x12100e,style:'bleached-tight-curls',faceWidth:.72,faceHeight:.73}},
-  {name:'小美叔叔',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0xa68f6c,style:'blond-side-sweep',faceWidth:.76,faceHeight:.78}},
-  {name:'德克米',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x100d0b,style:'messy-short-crop',faceWidth:.74,faceHeight:.74}},
+  {name:'B罗',buff:'attack',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd09a72,hair:0x190d07,style:'swept-forelock',faceWidth:.75,faceHeight:.74}},
+  {name:'小狐狸',buff:'attack',country:'葡萄牙',team:'portugal',number:11,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd8a17b,hair:0x211109,style:'fluffy-curls',faceWidth:.71,faceHeight:.76}},
+  {name:'外马尔',buff:'strength',country:'巴西',team:'brazil',number:10,color:0xf2d52b,accent:0x158447,shortsColor:0x2455a4,appearance:{skin:0xb97955,hair:0x55351f,style:'spiky-highlight-crop',faceWidth:.72,faceHeight:.73}},
+  {name:'黄金小兔兔',buff:'strength',country:'克罗地亚',team:'croatia',number:10,color:0xf2f2ed,accent:0xd6293b,shortsColor:0x173f77,appearance:{skin:0xe0ae86,hair:0x8f6738,hairAccent:0x684623,style:'dark-golden-pageboy',faceWidth:.68,faceHeight:.82}},
+  {name:'姆久佩',buff:'attack',country:'法国',team:'france',number:10,color:0x173d78,accent:0xd5263a,shortsColor:0x132c57,appearance:{skin:0x8b573e,hair:0x090909,style:'close-crop',faceWidth:.77,faceHeight:.72}},
+  {name:'朱古力',buff:'speed',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0x7e503a,hair:0x1d0f08,style:'rounded-curly-top',faceWidth:.74,faceHeight:.76}},
+  {name:'哈哈哈',buff:'speed',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54,appearance:{skin:0xe5bb98,hair:0xefd2a5,style:'short-blond-brush',faceWidth:.73,faceHeight:.82}},
+  {name:'小孩哥',buff:'strength',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70,appearance:{skin:0x9e6549,hair:0x918979,hairAccent:0x12100e,style:'bleached-tight-curls',faceWidth:.72,faceHeight:.73}},
+  {name:'小美叔叔',buff:'jump',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0xa68f6c,style:'blond-side-sweep',faceWidth:.76,faceHeight:.78}},
+  {name:'德克米',buff:'jump',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x100d0b,style:'messy-short-crop',faceWidth:.74,faceHeight:.74}},
 ];
+
+export const RESCUE_BUFF_LABELS=Object.freeze({attack:'攻击力',strength:'力量',jump:'弹跳',speed:'速度'});
+export const RESCUE_BUFF_EFFECTS=Object.freeze({attackDamage:1,strengthRange:.16,strengthKnockback:.16,jumpVelocity:.65,speed:.55});
+export function rescueBuffTotals(rescuedIndices=[]){
+  const totals={attack:0,strength:0,jump:0,speed:0};
+  for(const index of rescuedIndices){const type=RESCUE_PLAYERS[index]?.buff;if(type)totals[type]++}
+  return totals;
+}
 
 export const SKIN_CATALOG=[
   {id:'prisoner',name:'默认囚犯',color:0xd9771f,kind:'default'},

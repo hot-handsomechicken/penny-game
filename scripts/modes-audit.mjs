@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
-for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor));assert.ok(player.appearance&&Number.isInteger(player.appearance.skin)&&Number.isInteger(player.appearance.hair)&&player.appearance.style)}
+for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(RESCUE_BUFF_LABELS[player.buff]);assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor));assert.ok(player.appearance&&Number.isInteger(player.appearance.skin)&&Number.isInteger(player.appearance.hair)&&player.appearance.style)}
+assert.deepEqual(Object.fromEntries(RESCUE_PLAYERS.map((player,index)=>[player.name,rescueBuffTotals([index])[player.buff]])),Object.fromEntries(RESCUE_PLAYERS.map(player=>[player.name,1])));
+assert.deepEqual(rescueBuffTotals(RESCUE_PLAYERS.map((_,index)=>index)),{attack:3,strength:3,jump:2,speed:2});
+assert.deepEqual(Object.fromEntries(RESCUE_PLAYERS.map(player=>[player.name,player.buff])),{'B罗':'attack','小狐狸':'attack','外马尔':'strength','黄金小兔兔':'strength','姆久佩':'attack','朱古力':'speed','哈哈哈':'speed','小孩哥':'strength','小美叔叔':'jump','德克米':'jump'});
+assert.ok(7.2+2*RESCUE_BUFF_EFFECTS.speed<8.5);
+assert.ok(10+2*RESCUE_BUFF_EFFECTS.jumpVelocity<11.5);
+assert.ok(3.45+3*RESCUE_BUFF_EFFECTS.strengthRange<4);
 assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.style)).size,10);
 assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.hair)).size,10);
 assert.equal(STAR_FACE_STYLE,'dot-eyes-smile');
@@ -60,5 +66,7 @@ console.log('PASS  十位球星均配有国家队、球衣主辅色、短裤和�
 console.log('PASS  十位球星拥有十种独立小像素发型，并统一使用豆豆眼微笑脸');
 console.log('PASS  B罗、德克米细刘海与黄金小兔兔短妹妹头映射已锁定');
 console.log('PASS  获救球员平时松散跟随，战斗时全部收拢在玩家身边');
+console.log('PASS  十位球星按指定分组提供攻击、力量、弹跳与速度增益');
+console.log('PASS  满级速度、弹跳和攻击范围增益保持在关卡安全上限内');
 console.log('PASS  厕所正确出口永久固定为从左往右第二个隔间');
 console.log('PASS  普通与拯救模式第 12 关均禁用梅东战斗与血条');
