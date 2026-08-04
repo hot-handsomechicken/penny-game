@@ -8,6 +8,7 @@ import {
   HERO_HEIGHT,
   HERO_RADIUS,
   intersectsBody,
+  intersectsYawedBox,
   overlapsHorizontal,
   overlapsVertical,
   resolveVerticalSweep,
@@ -79,7 +80,7 @@ const sewerRoute=[[-1.5,-9],[0,-5.2],[1.5,-1.4],[0,2.4],[-1.5,6.2],[0,9.5]];sewe
 
 // 锅炉房：前段教学用的低速短旋臂，两侧保留清晰安全区
 for(let z of [95,108])for(let x of [-5.8,5.8]){box(x,1.6,z,2.1,3.2,3.2,M.rust);pipe(x,3.4,z,2.5,'y',M.rust)}
-for(let k=0;k<2;k++){const pivot=new THREE.Group();pivot.position.set(0,.55,99+k*11);world.add(pivot);const arm=box(0,0,0,8.5,.32,.4,M.hazard,false,true,pivot);hazards.push(arm);pivot.userData={rotate:true,speed:.68+k*.14};movers.push(pivot)}
+for(let k=0;k<2;k++){const pivot=new THREE.Group();pivot.position.set(0,.55,99+k*11);world.add(pivot);const arm=box(0,0,0,7.2,.32,.4,M.hazard,false,true,pivot);hazards.push(arm);pivot.userData={rotate:true,speed:.52+k*.12};movers.push(pivot)}
 
 // 安检走廊：交错的钢闸
 for(let k=0;k<5;k++){const z=126+k*5,gap=k%2?-4.6:4.6;box(0,4.3,z,14,.5,.65,M.metal);for(let x=-5.5;x<=5.5;x+=1.55)if(Math.abs(x-gap)>1.2)danger(x,1.85,z,.52,3.7,.52,M.red)}
@@ -201,7 +202,7 @@ function objectBounds(object){
 
 const state={started:false,won:false,paused:false,pauseStarted:0,wonTime:0,stage:0,start:0,checkpoint:new THREE.Vector3(0,.02,2),velocity:new THREE.Vector3(),grounded:true,coyote:.1,jumpBuffer:0,yaw:0,pitch:.48,cameraDistance:8,keys:{},last:0,attackCooldown:0,attackAnim:0,combo:0,comboTimer:0,invulnerable:0,moneyGun:false};
 const hunterState={active:false,hp:100,maxHp:100,stage:-1,stun:0,mode:'idle',modeTimer:0,steerSign:1,hitFlash:0,lastUiMode:'',isMech:false,armMaxHp:100,leftArmHp:100,rightArmHp:100};
-const UP=new THREE.Vector3(0,1,0),viewForward=new THREE.Vector3(),viewRight=new THREE.Vector3(),moveDirection=new THREE.Vector3(),oldHeroPosition=new THREE.Vector3(),hunterDelta=new THREE.Vector3(),hunterSide=new THREE.Vector3(),hunterProbe=new THREE.Vector3(),attackDelta=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraDirection=new THREE.Vector3(),cameraCandidates=[],leftArmWorld=new THREE.Vector3(),rightArmWorld=new THREE.Vector3(),aimProjection=new THREE.Vector3(),shotStart=new THREE.Vector3(),shotEnd=new THREE.Vector3();
+const UP=new THREE.Vector3(0,1,0),viewForward=new THREE.Vector3(),viewRight=new THREE.Vector3(),moveDirection=new THREE.Vector3(),oldHeroPosition=new THREE.Vector3(),hunterDelta=new THREE.Vector3(),hunterSide=new THREE.Vector3(),hunterProbe=new THREE.Vector3(),attackDelta=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraDirection=new THREE.Vector3(),cameraCandidates=[],leftArmWorld=new THREE.Vector3(),rightArmWorld=new THREE.Vector3(),aimProjection=new THREE.Vector3(),shotStart=new THREE.Vector3(),shotEnd=new THREE.Vector3(),hazardCenter=new THREE.Vector3(),hazardQuaternion=new THREE.Quaternion(),hazardEuler=new THREE.Euler();
 let hunterSpawnTimer=0;
 const stageEl=document.querySelector('#stage'),bar=document.querySelector('#bar'),missionEl=document.querySelector('#missionText'),toast=document.querySelector('#toast'),timeEl=document.querySelector('#time'),hunterHud=document.querySelector('#hunterHud'),hunterTitle=document.querySelector('#hunterTitle'),hunterMainBar=document.querySelector('#hunterMainBar'),hunterHp=document.querySelector('#hunterHp'),hunterHpText=document.querySelector('#hunterHpText'),hunterIntent=document.querySelector('#hunterIntent'),mechArms=document.querySelector('#mechArms'),leftArmHp=document.querySelector('#leftArmHp'),rightArmHp=document.querySelector('#rightArmHp'),weaponHud=document.querySelector('#weaponHud'),aimReticle=document.querySelector('#aimReticle'),attackButton=document.querySelector('#attack'),attackLabel=document.querySelector('#attackLabel'),pauseMenu=document.querySelector('#pauseMenu'),qualitySelect=document.querySelector('#quality'),fpsReadout=document.querySelector('#fpsReadout');
 const QUALITY_KEY='block-break-quality-v1';let qualityMode='auto',autoDegraded=false;try{qualityMode=localStorage.getItem(QUALITY_KEY)||'auto'}catch{}if(!['auto','high','low'].includes(qualityMode))qualityMode='auto';
@@ -289,6 +290,7 @@ function beep(freq=440,duration=.09){audio.tone(freq,duration)}
 function announce(s){toast.textContent=s;toast.classList.add('show');clearTimeout(announce.t);announce.t=setTimeout(()=>toast.classList.remove('show'),1200)}
 function updateStage(i){if(i<=state.stage)return;state.stage=i;state.checkpoint.set(0,.02,i*STAGE_LENGTH+2);stageEl.textContent=stageNames[i];bar.style.width=`${(i+1)/STAGE_COUNT*100}%`;missionEl.textContent=missions[i];checkpoints.forEach((c,k)=>setCheckpoint(c,k<=i));announce(i===10?'⚠ 假撤离点！后半程还有 10 关':i===LAST_STAGE?'⚑ 最终检查点 · 准备撤离':`⚑ 检查点 ${i+1} / ${STAGE_COUNT} 已激活`);beep(i===10?330:740,.15);haptic(i===10?[45,35,70]:45);if(encounterStages.includes(i)){if(hunterSpawnTimer)clearTimeout(hunterSpawnTimer);hunterSpawnTimer=setTimeout(()=>{hunterSpawnTimer=0;if(state.started&&!state.won&&state.stage===i)spawnHunter(i)},350)}}
 function hit(obj,pad=.5){return intersectsBody(hero.position,objectBounds(obj),pad)}
+function hitHazard(obj,pad=.28){const dimensions=obj.geometry?.parameters;if(obj.parent?.userData.rotate&&dimensions?.width){obj.getWorldPosition(hazardCenter);obj.getWorldQuaternion(hazardQuaternion);hazardEuler.setFromQuaternion(hazardQuaternion,'YXZ');return intersectsYawedBox(hero.position,hazardCenter,hazardEuler.y,dimensions.width,dimensions.height,dimensions.depth,pad)}return hit(obj,pad)}
 function die(reason='被抓住了'){if(state.invulnerable>0)return;announce(`✖ ${reason} · 返回检查点`);beep(120,.24);haptic([90,50,90]);reset();state.invulnerable=1.15}
 function format(sec){const m=Math.floor(sec/60).toString().padStart(2,'0'),s=Math.floor(sec%60).toString().padStart(2,'0');return `${m}:${s}`}
 const BEST_KEY='block-break-best-20-stage-v1',bestEl=document.querySelector('#bestTime');function readBest(){try{return Number(localStorage.getItem(BEST_KEY))||0}catch{return 0}}function showBest(){const best=readBest();bestEl.textContent=best?`20关最佳 ${format(best)}`:'20关最佳 --:--'}function saveBest(sec){const best=readBest();if(!best||sec<best){try{localStorage.setItem(BEST_KEY,String(sec))}catch{}announce('★ 新的20关最佳纪录！')}showBest()}
@@ -337,7 +339,7 @@ function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/10
     }
     updateMoneyShots(dt);
     audio.update({moving:dir.lengthSq()>.1,grounded:state.grounded,hunter:hunterState.active,now:t/1000});
-    for(const h of hazards){if(Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hit(h,.28)){die('触碰危险机关');break}}
+    for(const h of hazards){if(Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hitHazard(h,.28)){die('触碰危险机关');break}}
     if(Math.abs(hero.position.x)>7.2||hero.position.y < -3)die();
     // Crossing the front edge of a checkpoint pad activates that respawn point.
     const si=Math.max(0,Math.min(LAST_STAGE,Math.floor((hero.position.z-1)/STAGE_LENGTH)));if(si>state.stage)updateStage(si);

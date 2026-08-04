@@ -23,7 +23,7 @@ for(const check of checks){
 const spikeCenterGap=3,spikeDangerDiameter=2*(.5+.28),spikeClearance=spikeCenterGap-spikeDangerDiameter;
 const spikePass=spikeClearance>=1.2;failed||=!spikePass;
 console.log(`${spikePass?'PASS':'FAIL'}  操场尖刺通道  净宽 ${spikeClearance.toFixed(2)} 方块`);
-const boilerArmLength=8.5,boilerMaxSpeed=.82,boilerSideClearance=(14.4-boilerArmLength)/2;
-const boilerPass=boilerSideClearance>=2.5&&boilerMaxSpeed<=.85;failed||=!boilerPass;
+const boilerArmLength=7.2,boilerMaxSpeed=.64,boilerSideClearance=(14.4-boilerArmLength)/2;
+const boilerPass=boilerSideClearance>=3.5&&boilerMaxSpeed<=.65;failed||=!boilerPass;
 console.log(`${boilerPass?'PASS':'FAIL'}  锅炉房短旋臂  侧边安全区 ${boilerSideClearance.toFixed(2)} / 最高转速 ${boilerMaxSpeed.toFixed(2)}`);
 if(failed)process.exitCode=1;

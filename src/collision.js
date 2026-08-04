@@ -36,6 +36,30 @@ export function intersectsBody(
   );
 }
 
+export function intersectsYawedBox(
+  position,
+  center,
+  yaw,
+  width,
+  boxHeight,
+  depth,
+  pad = HERO_RADIUS,
+  bodyHeight = HERO_HEIGHT,
+) {
+  const dx = position.x - center.x;
+  const dz = position.z - center.z;
+  const cosine = Math.cos(yaw);
+  const sine = Math.sin(yaw);
+  const localX = cosine * dx - sine * dz;
+  const localZ = sine * dx + cosine * dz;
+  return (
+    Math.abs(localX) < width / 2 + pad &&
+    Math.abs(localZ) < depth / 2 + pad &&
+    position.y + bodyHeight > center.y - boxHeight / 2 &&
+    position.y < center.y + boxHeight / 2 + 0.15
+  );
+}
+
 export function resolveVerticalSweep(
   previousY,
   nextY,

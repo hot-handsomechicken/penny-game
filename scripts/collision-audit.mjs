@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   HERO_HEIGHT,
   intersectsBody,
+  intersectsYawedBox,
   overlapsHorizontal,
   overlapsVertical,
   resolveVerticalSweep,
@@ -45,6 +46,19 @@ assert.equal(
   true,
 );
 
+const rotatingBar={center:{x:0,y:.55,z:0},yaw:Math.PI/4,width:7.2,height:.32,depth:.4};
+assert.equal(
+  intersectsYawedBox({x:2.4,y:.02,z:2.4},rotatingBar.center,rotatingBar.yaw,rotatingBar.width,rotatingBar.height,rotatingBar.depth,.28),
+  false,
+  'a player inside the rotated bar AABB but outside the actual bar must remain safe',
+);
+assert.equal(
+  intersectsYawedBox({x:2.4,y:.02,z:-2.4},rotatingBar.center,rotatingBar.yaw,rotatingBar.width,rotatingBar.height,rotatingBar.depth,.28),
+  true,
+  'a player standing on the actual rotated bar must be hit',
+);
+
 console.log('PASS  高速下落不会穿透平台');
 console.log('PASS  头顶碰撞会停止上升');
 console.log('PASS  地面接触不会误判为侧面碰撞');
+console.log('PASS  旋转横杆使用贴合模型的角度碰撞，不再误判外接矩形');
