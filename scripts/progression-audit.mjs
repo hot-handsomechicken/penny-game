@@ -16,9 +16,9 @@ const stages=[
   {name:'放风操场',type:'gap',gapWidth:1.44},
   {name:'警戒屋顶',type:'lane',obstacleWidth:3},
   {name:'假撤离点',type:'timed-jump',obstacleTop:.675},
-  {name:'档案禁区',type:'lane',obstacleWidth:4.2},
-  {name:'证物仓库',type:'route',clearance:1.3},
-  {name:'低温冷库',type:'lane',obstacleWidth:3.1},
+  {name:'监狱厕所入口',type:'gap',gapWidth:10},
+  {name:'四选一隔间',type:'gap',gapWidth:2.2},
+  {name:'厕所下水道',type:'gap',gapWidth:9.8},
   {name:'维修竖井',type:'jump',obstacleTop:.695},
   {name:'守卫营房',type:'jump',obstacleTop:.69},
   {name:'押运车库',type:'lane',obstacleWidth:3.6},
@@ -39,9 +39,14 @@ for(const [index,stage] of stages.entries()){
 }
 
 assert.ok(player.speed>5.3,'最终关追击者速度不应超过玩家');
+const toiletDoorCenters=[-5.1,-1.7,1.7,5.1],toiletDoorWidth=2.2,sewerCeilingBottom=9.6;
+for(let i=1;i<toiletDoorCenters.length;i++)assert.ok(toiletDoorCenters[i]-toiletDoorCenters[i-1]>toiletDoorWidth+player.radius*2,'厕所隔间门之间缺少可靠分隔');
+assert.ok(toiletDoorWidth>player.radius*2+1,'厕所隔间门净宽不足');
+assert.ok(sewerCeilingBottom-defaultJumpCameraTop>2,'厕所下水道必须为跳跃镜头保留至少 2 米余量');
 const finalCheckpoint={x:0,z:572},moneyGun={x:-4.8,z:575};
 const pickupDistance=Math.hypot(finalCheckpoint.x-moneyGun.x,finalCheckpoint.z-moneyGun.z);
 assert.ok(pickupDistance>=3&&pickupDistance<=7,'钞票枪应位于最终检查点附近但需要主动前往取得');
 console.log(`PASS  二十关检查点顺序、关键通路与最终追击速度`);
 console.log(`PASS  封闭区域跳跃镜头距离天花板仍有 ${(enclosedCeilingBottom-defaultJumpCameraTop).toFixed(2)} 米余量`);
 console.log(`PASS  最终检查点到钞票枪 ${pickupDistance.toFixed(2)} 米，拾取距离合理`);
+console.log('PASS  四个厕所隔间可独立接近，下水道不会遮挡跳跃视角');

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,createMathQuestion,isMathAnswerCorrect,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,createMathQuestion,createToiletLayout,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
@@ -8,6 +8,17 @@ assert.deepEqual(unlockedSkinIds(),['prisoner','ponytail']);
 assert.deepEqual(unlockedSkinIds({claimedMedong:true}),['prisoner','ponytail','medong']);
 assert.equal(RESCUE_REWARD_SKIN_IDS.length,10);
 assert.equal(unlockedSkinIds({claimedMedong:true,rescueCompleted:true}).length,13);
+const toiletA=createToiletLayout(()=>.12),toiletB=createToiletLayout(()=>.81);
+for(const layout of [toiletA,toiletB]){
+  assert.equal(layout.length,4);
+  assert.equal(layout.filter(value=>value==='tunnel').length,1);
+  assert.equal(layout.filter(value=>value==='corpse').length,2);
+  assert.equal(layout.filter(value=>value==='medong').length,1);
+}
+assert.notDeepEqual(toiletA,toiletB);
+assert.equal(isToiletNoCombat('escape',11),true);
+assert.equal(isToiletNoCombat('escape',10),false);
+assert.equal(isToiletNoCombat('rescue',11),false);
 assert.equal(RESCUE_PLACEMENTS.length,RESCUE_PLAYERS.length);
 for(const [stage,placement] of RESCUE_PLACEMENTS.entries()){
   const minZ=stage*30+3,maxZ=(stage+1)*30-3;
@@ -34,3 +45,5 @@ console.log('PASS  十名球员按检查点顺序形成营救门槛');
 console.log('PASS  十组钥匙和笼子均位于对应关卡安全范围');
 console.log('PASS  拯救模式梅东血量逐关大幅增加');
 console.log('PASS  默认、领取与通关奖励皮肤解锁规则正确');
+console.log('PASS  厕所四个隔间每局随机且保持一条生路、三条错误路线');
+console.log('PASS  只有普通模式第 12 关禁用梅东战斗与血条');

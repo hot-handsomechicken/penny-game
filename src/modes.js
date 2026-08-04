@@ -31,6 +31,13 @@ export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false}={}){
   return unlocked;
 }
 
+export function createToiletLayout(rng=Math.random){
+  const layout=['tunnel','corpse','corpse','medong'];
+  for(let i=layout.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[layout[i],layout[j]]=[layout[j],layout[i]]}
+  return layout;
+}
+export function isToiletNoCombat(mode,stage){return mode==='escape'&&stage===11}
+
 // 每组钥匙与笼子都落在对应关卡的安全落脚区域，避免隔墙拾取或必须踩机关才能营救。
 export const RESCUE_PLACEMENTS=[
   {key:[-4.6,.15,8],cage:[4.7,0,18]},
