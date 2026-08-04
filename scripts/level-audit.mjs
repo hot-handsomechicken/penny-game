@@ -6,7 +6,7 @@ const landingRange=height=>{
 };
 const maxStep=(route)=>Math.max(...route.slice(1).map((p,i)=>Math.hypot(p[0]-route[i][0],p[1]-route[i][1])));
 const checks=[
-  {name:'排污渠浮箱',route:[[-2.4,66],[0,70],[2.4,74],[0,78],[-2.4,82],[0,85]],rise:.625},
+  {name:'排污渠浮箱',route:[[-1.5,66],[0,69.8],[1.5,73.6],[0,77.4],[-1.5,81.2],[0,84.5]],rise:.625,maxUsage:.72},
   {name:'厨房炉台',route:[[-1.6,157],[1.6,161],[-1.6,165],[1.6,169],[-1.6,173]],rise:.68},
   {name:'通风管踏板',route:[[-1.35,185],[1.35,189],[-1.35,193],[1.35,197],[-1.35,201],[1.35,205]],rise:.18},
   {name:'证物仓浮箱',route:[[-2.5,337],[0,341],[2.5,345],[0,349],[-2.5,353],[0,356]],rise:0},
@@ -17,7 +17,7 @@ let failed=false;
 console.log(`角色同高度最大跳跃距离: ${landingRange(0).toFixed(2)} 方块`);
 for(const check of checks){
   const step=maxStep(check.route),range=landingRange(check.rise),ratio=step/range;
-  const pass=ratio<=.9;failed||=!pass;
+  const pass=ratio<=(check.maxUsage||.9);failed||=!pass;
   console.log(`${pass?'PASS':'FAIL'}  ${check.name.padEnd(8)} 跨度 ${step.toFixed(2)} / 能力 ${range.toFixed(2)} / 使用率 ${(ratio*100).toFixed(0)}%`);
 }
 const spikeCenterGap=3,spikeDangerDiameter=2*(.5+.28),spikeClearance=spikeCenterGap-spikeDangerDiameter;

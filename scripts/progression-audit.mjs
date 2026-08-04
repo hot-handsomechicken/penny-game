@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 const player={radius:.4,height:1.65,speed:7.2,jump:10,gravity:22};
 const jumpHeight=player.jump**2/(2*player.gravity);
 const corridorWidth=14.4;
+const enclosedCeilingBottom=9.6,defaultJumpCameraTop=jumpHeight+1.35+Math.sin(.48)*8;
+assert.ok(enclosedCeilingBottom-defaultJumpCameraTop>2,'封闭区域天花板应为默认跳跃视角保留至少 2 米余量');
 const stages=[
   {name:'牢房区',type:'jump',obstacleTop:.69},
   {name:'洗衣封锁区',type:'lane',obstacleWidth:2.5},
@@ -41,4 +43,5 @@ const finalCheckpoint={x:0,z:572},moneyGun={x:-4.8,z:575};
 const pickupDistance=Math.hypot(finalCheckpoint.x-moneyGun.x,finalCheckpoint.z-moneyGun.z);
 assert.ok(pickupDistance>=3&&pickupDistance<=7,'钞票枪应位于最终检查点附近但需要主动前往取得');
 console.log(`PASS  二十关检查点顺序、关键通路与最终追击速度`);
+console.log(`PASS  封闭区域跳跃镜头距离天花板仍有 ${(enclosedCeilingBottom-defaultJumpCameraTop).toFixed(2)} 米余量`);
 console.log(`PASS  最终检查点到钞票枪 ${pickupDistance.toFixed(2)} 米，拾取距离合理`);
