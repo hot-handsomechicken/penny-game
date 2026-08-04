@@ -3,19 +3,20 @@ export const MODE_CONFIG={
   math:{stageCount:12,title:'数学期末考试',winTitle:'期末满分！',winCopy:'梅东老师认可了你的 12 关成绩'},
   rescue:{stageCount:15,title:'球星拯救',winTitle:'全员获救！',winCopy:'你带领球员们完成了 15 关撤离'},
 };
-export const STAR_FACE_TEXTURE_SIZE=32;
+export const STAR_FACE_TEXTURE_SIZE=64;
+export const STAR_FACE_STYLE='dot-eyes-smile';
 
 export const RESCUE_PLAYERS=[
-  {name:'B罗',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd09a72,hair:0x211714,style:'sharp-fade',beard:'clean',faceWidth:.75,faceHeight:.74}},
-  {name:'小狐狸',country:'葡萄牙',team:'portugal',number:11,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd8a17b,hair:0x35241f,style:'wavy-fringe',beard:'clean',faceWidth:.71,faceHeight:.76}},
-  {name:'外马尔',country:'巴西',team:'brazil',number:10,color:0xf2d52b,accent:0x158447,shortsColor:0x2455a4,appearance:{skin:0xb97955,hair:0x231813,hairAccent:0xd1ac56,style:'curly-highlight-fade',beard:'trimmed',faceWidth:.72,faceHeight:.73}},
-  {name:'黄金小兔兔',country:'克罗地亚',team:'croatia',number:10,color:0xf2f2ed,accent:0xd6293b,shortsColor:0x173f77,appearance:{skin:0xe0ae86,hair:0xc99d5d,style:'long-blond-bob',beard:'stubble',faceWidth:.68,faceHeight:.82}},
-  {name:'姆久佩',country:'法国',team:'france',number:10,color:0x173d78,accent:0xd5263a,shortsColor:0x132c57,appearance:{skin:0x8b573e,hair:0x17110f,style:'close-crop',beard:'clean',faceWidth:.77,faceHeight:.72}},
-  {name:'朱古力',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0x7e503a,hair:0x18120f,style:'curly-high-top',beard:'clean',faceWidth:.74,faceHeight:.76}},
-  {name:'哈哈哈',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54,appearance:{skin:0xe5bb98,hair:0xd5b56d,style:'long-blond-tie',beard:'clean',faceWidth:.73,faceHeight:.82}},
-  {name:'小孩哥',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70,appearance:{skin:0x9e6549,hair:0x261a17,hairAccent:0xb88d50,style:'curly-taper',beard:'clean',faceWidth:.72,faceHeight:.73}},
-  {name:'小美叔叔',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0x704b37,style:'neat-side-part',beard:'full',faceWidth:.76,faceHeight:.78}},
-  {name:'德克米',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x35251f,style:'textured-crop',beard:'stubble',faceWidth:.74,faceHeight:.74}},
+  {name:'B罗',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd09a72,hair:0x1d1513,style:'swept-forelock',faceWidth:.75,faceHeight:.74}},
+  {name:'小狐狸',country:'葡萄牙',team:'portugal',number:11,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd8a17b,hair:0x36251f,style:'fluffy-curls',faceWidth:.71,faceHeight:.76}},
+  {name:'外马尔',country:'巴西',team:'brazil',number:10,color:0xf2d52b,accent:0x158447,shortsColor:0x2455a4,appearance:{skin:0xb97955,hair:0x241915,hairAccent:0xb99561,style:'spiky-highlight-crop',faceWidth:.72,faceHeight:.73}},
+  {name:'黄金小兔兔',country:'克罗地亚',team:'croatia',number:10,color:0xf2f2ed,accent:0xd6293b,shortsColor:0x173f77,appearance:{skin:0xe0ae86,hair:0x8f6738,hairAccent:0x684623,style:'dark-golden-pageboy',faceWidth:.68,faceHeight:.82}},
+  {name:'姆久佩',country:'法国',team:'france',number:10,color:0x173d78,accent:0xd5263a,shortsColor:0x132c57,appearance:{skin:0x8b573e,hair:0x15110f,style:'close-crop',faceWidth:.77,faceHeight:.72}},
+  {name:'朱古力',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0x7e503a,hair:0x19130f,style:'rounded-curly-top',faceWidth:.74,faceHeight:.76}},
+  {name:'哈哈哈',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54,appearance:{skin:0xe5bb98,hair:0xc9a96a,style:'short-blond-brush',faceWidth:.73,faceHeight:.82}},
+  {name:'小孩哥',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70,appearance:{skin:0x9e6549,hair:0xb58a55,hairAccent:0x2a1d19,style:'bleached-tight-curls',faceWidth:.72,faceHeight:.73}},
+  {name:'小美叔叔',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0x8b684a,style:'blond-side-sweep',faceWidth:.76,faceHeight:.78}},
+  {name:'德克米',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x33241e,style:'messy-short-crop',faceWidth:.74,faceHeight:.74}},
 ];
 
 export const SKIN_CATALOG=[
