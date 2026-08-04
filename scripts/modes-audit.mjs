@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
-for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor))}
+for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor));assert.ok(player.appearance&&Number.isInteger(player.appearance.skin)&&Number.isInteger(player.appearance.hair)&&player.appearance.style&&player.appearance.beard)}
+assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.style)).size,10);
+assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.hair)).size,10);
+assert.ok(STAR_FACE_TEXTURE_SIZE>=32);
 const bro=RESCUE_PLAYERS.find(player=>player.name==='B罗');assert.equal(bro.country,'葡萄牙');assert.equal(bro.team,'portugal');assert.equal(bro.number,7);assert.notEqual(bro.color,bro.accent);
 assert.deepEqual([...new Set(RESCUE_PLAYERS.map(player=>player.country))].sort(),['克罗地亚','巴西','挪威','法国','英格兰','葡萄牙','西班牙'].sort());
 assert.equal(SKIN_CATALOG.length,13);
@@ -45,5 +48,6 @@ console.log('PASS  十组钥匙和笼子均位于对应关卡安全范围');
 console.log('PASS  拯救模式梅东血量逐关大幅增加');
 console.log('PASS  默认、领取与通关奖励皮肤解锁规则正确');
 console.log('PASS  十位球星均配有国家队、球衣主辅色、短裤和号码');
+console.log('PASS  十位球星拥有十种独立发型、发色与高密度面部像素配置');
 console.log('PASS  厕所正确出口永久固定为从左往右第二个隔间');
 console.log('PASS  只有普通模式第 12 关禁用梅东战斗与血条');
