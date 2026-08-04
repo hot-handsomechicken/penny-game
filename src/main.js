@@ -248,7 +248,8 @@ function starMaterial(player,type){const key=`${player.name}-${type}`;if(starMat
 function canvasPolygon(q,points){q.beginPath();q.moveTo(...points[0]);for(const point of points.slice(1))q.lineTo(...point);q.closePath();q.fill()}
 function paintFineFringe(q,player){q.fillStyle=colorCss(player.appearance.hair);
   if(player.name==='B罗'){
-    canvasPolygon(q,[[7,8],[15,10],[13,18],[11,24],[8,21]]);canvasPolygon(q,[[27,8],[34,9],[36,17],[33,28],[29,31],[31,19]]);canvasPolygon(q,[[42,9],[48,8],[47,17],[44,23],[45,14]]);
+    // 仅把参考图中最细的三根碎刘海放进脸部贴图，并紧贴立体发际线。
+    for(const [x,y] of [[10,11],[11,13],[11,15],[10,17],[9,19],[31,11],[31,13],[30,15],[29,17],[28,19],[27,21],[46,11],[45,13],[45,15],[44,17],[43,19]])q.fillRect(x,y,2,2);
   }else if(player.name==='德克米'){
     canvasPolygon(q,[[25,9],[31,10],[31,18],[29,25],[26,21]]);canvasPolygon(q,[[34,9],[40,10],[39,18],[36,25],[34,20]]);
   }
@@ -261,7 +262,7 @@ function starFaceMaterial(player){const key=`${player.name}-${STAR_FACE_STYLE}`;
   const texture=new THREE.CanvasTexture(c);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestMipmapLinearFilter;texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,roughness:1});starMaterials.set(key,mat);return mat
 }
 const HAIR_FRONT_PROFILES={
-  'swept-forelock':[{points:[[-.54,.66],[.54,.66],[.54,.2],[.49,.1],[.43,.18],[.25,.15],[.08,.13],[-.08,.13],[-.27,.16],[-.43,.11],[-.5,.2]]}],
+  'swept-forelock':[{depth:.085,points:[[-.54,.54],[.54,.54],[.54,.2],[.49,.15],[.39,.18],[.27,.14],[.14,.18],[.02,.13],[-.11,.18],[-.25,.13],[-.39,.17],[-.5,.14],[-.54,.2]]}],
   'spiky-highlight-crop':[{points:[[-.55,.08],[-.62,.22],[-.5,.29],[-.47,.51],[-.34,.74],[-.21,.49],[-.04,.75],[.09,.49],[.25,.78],[.36,.5],[.47,.68],[.5,.31],[.62,.24],[.54,.08]]}],
   'dark-golden-pageboy':[
     {points:[[-.56,.7],[-.02,.7],[-.01,.42],[-.12,.3],[-.28,.12],[-.48,-.38],[-.56,-.28]]},
@@ -279,9 +280,9 @@ const HAIR_FRONT_PROFILES={
   'messy-short-crop':[{points:[[-.55,.12],[-.55,.46],[-.44,.62],[-.28,.46],[-.12,.56],[.02,.47],[.17,.61],[.31,.46],[.46,.57],[.55,.45],[.55,.12],[.48,.18],[-.48,.18]]}],
   'medong-side-part':[{points:[[-.55,.08],[-.55,.45],[-.43,.61],[-.3,.55],[-.02,.78],[.4,.47],[.55,.2],[.5,.08],[.43,.18],[-.43,.18]]}],
 };
-function createHairSilhouette(points,width,height,material,z=.356){const shape=new THREE.Shape();shape.moveTo(points[0][0]*width,points[0][1]*height);for(const [x,y] of points.slice(1))shape.lineTo(x*width,y*height);shape.closePath();const mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);mesh.position.z=z;mesh.castShadow=true;mesh.name='front-hair-silhouette';return mesh}
+function createHairSilhouette(points,width,height,material,z=.356,depth=0){const shape=new THREE.Shape();shape.moveTo(points[0][0]*width,points[0][1]*height);for(const [x,y] of points.slice(1))shape.lineTo(x*width,y*height);shape.closePath();const geometry=depth>0?new THREE.ExtrudeGeometry(shape,{depth,steps:1,bevelEnabled:false}):new THREE.ShapeGeometry(shape),mesh=new THREE.Mesh(geometry,material);mesh.position.z=z;mesh.castShadow=true;mesh.name=depth>0?'modeled-thick-front-hair':'front-hair-silhouette';return mesh}
 function createStarHead(player){const a=player.appearance,group=new THREE.Group(),skin=starMaterial(player,'skin'),hairMat=starMaterial(player,'hair'),accent=starMaterial(player,'accent'),crownMat=a.style==='bleached-tight-curls'?accent:hairMat,headMesh=cube(a.faceWidth,a.faceHeight,.7,[skin,skin,crownMat,skin,starFaceMaterial(player),skin]),top=a.faceHeight/2;group.add(headMesh);
-  for(const part of HAIR_FRONT_PROFILES[a.style]||[])group.add(createHairSilhouette(part.points,a.faceWidth,a.faceHeight,part.material==='accent'?accent:hairMat));
+  for(const part of HAIR_FRONT_PROFILES[a.style]||[])group.add(createHairSilhouette(part.points,a.faceWidth,a.faceHeight,part.material==='accent'?accent:hairMat,.356,part.depth??0));
   const crown=cube(a.faceWidth+.035,.12,.72,crownMat);crown.position.set(0,top+.045,-.02);group.add(crown);
   if(a.style==='dark-golden-pageboy'){const sideL=cube(.1,.62,.65,hairMat),sideR=sideL.clone(),bobBack=cube(a.faceWidth+.04,.64,.1,hairMat);sideL.position.set(-a.faceWidth/2-.035,top-.25,-.03);sideR.position.set(a.faceWidth/2+.035,top-.25,-.03);bobBack.position.set(0,top-.25,-.4);group.add(sideL,sideR,bobBack)}
   else{const fullBack=cube(a.faceWidth+.035,a.faceHeight+.02,.1,crownMat);fullBack.position.set(0,0,-.4);fullBack.name='modeled-full-short-hair-back';group.add(fullBack)}
