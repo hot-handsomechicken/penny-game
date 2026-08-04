@@ -26,6 +26,10 @@ export function rescueBuffTotals(rescuedIndices=[]){
   for(const index of rescuedIndices){const type=RESCUE_PLAYERS[index]?.buff;if(type)totals[type]++}
   return totals;
 }
+export function launchShortcut(search=''){
+  const params=new URLSearchParams(search);
+  return params.get('play')==='rescue-toilet'?{mode:'rescue',stage:10,rescuedIndices:RESCUE_PLAYERS.map((_,index)=>index)}:null;
+}
 
 export const SKIN_CATALOG=[
   {id:'prisoner',name:'默认囚犯',color:0xd9771f,kind:'default'},
