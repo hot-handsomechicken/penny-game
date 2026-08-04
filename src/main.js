@@ -245,36 +245,46 @@ function nationalJerseyMaterial(player,view='front'){
 function nationalKit(player){let kit=nationalKits.get(player.name);if(kit)return kit;const side=nationalJerseyMaterial(player,'side'),front=nationalJerseyMaterial(player,'front'),back=nationalJerseyMaterial(player,'back'),shorts=new THREE.MeshStandardMaterial({color:player.shortsColor,roughness:.92});kit={body:[side,side,side,shorts,front,back],shorts};nationalKits.set(player.name,kit);return kit}
 const starMaterials=new Map();
 function starMaterial(player,type){const key=`${player.name}-${type}`;if(starMaterials.has(key))return starMaterials.get(key);const appearance=player.appearance,color=type==='skin'?appearance.skin:type==='accent'?(appearance.hairAccent??appearance.hair):appearance.hair,mat=new THREE.MeshStandardMaterial({color,roughness:type==='skin'?1:.96});starMaterials.set(key,mat);return mat}
+function canvasPolygon(q,points){q.beginPath();q.moveTo(...points[0]);for(const point of points.slice(1))q.lineTo(...point);q.closePath();q.fill()}
+function paintFineFringe(q,player){q.fillStyle=colorCss(player.appearance.hair);
+  if(player.name==='B罗'){
+    canvasPolygon(q,[[7,8],[15,10],[13,18],[11,24],[8,21]]);canvasPolygon(q,[[27,8],[34,9],[36,17],[33,28],[29,31],[31,19]]);canvasPolygon(q,[[42,9],[48,8],[47,17],[44,23],[45,14]]);
+  }else if(player.name==='德克米'){
+    canvasPolygon(q,[[25,9],[31,10],[31,18],[29,25],[26,21]]);canvasPolygon(q,[[34,9],[40,10],[39,18],[36,25],[34,20]]);
+  }
+}
 function starFaceMaterial(player){const key=`${player.name}-${STAR_FACE_STYLE}`;if(starMaterials.has(key))return starMaterials.get(key);const a=player.appearance,c=document.createElement('canvas');c.width=c.height=STAR_FACE_TEXTURE_SIZE;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.fillStyle=colorCss(a.skin);q.fillRect(0,0,STAR_FACE_TEXTURE_SIZE,STAR_FACE_TEXTURE_SIZE);
-  // 全员统一的极简 Roblox 像素脸：小豆豆眼和一条轻微上扬的微笑。
-  q.fillStyle='#241b18';q.fillRect(18,23,3,7);q.fillRect(43,23,3,7);
-  for(const [x,y,w] of [[17,42,3],[20,45,3],[23,47,4],[27,49,10],[37,47,4],[41,45,3],[44,42,3]])q.fillRect(x,y,w,2);
+  paintFineFringe(q,player);
+  // 全员统一的极简 Roblox 像素脸：刘海下方只保留小豆豆眼和微笑。
+  q.fillStyle='#241b18';q.fillRect(18,31,3,7);q.fillRect(43,31,3,7);
+  for(const [x,y,w] of [[17,48,3],[20,51,3],[23,53,4],[27,55,10],[37,53,4],[41,51,3],[44,48,3]])q.fillRect(x,y,w,2);
   const texture=new THREE.CanvasTexture(c);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestMipmapLinearFilter;texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,roughness:1});starMaterials.set(key,mat);return mat
 }
-function hairPiece(group,x,y,z,w,h,d,material,rz=0,ry=0){const piece=cube(w,h,d,material);piece.position.set(x,y,z);piece.rotation.z=rz;piece.rotation.y=ry;group.add(piece);return piece}
-function createStarHead(player){const a=player.appearance,group=new THREE.Group(),skin=starMaterial(player,'skin'),hairMat=starMaterial(player,'hair'),accent=starMaterial(player,'accent'),headMesh=cube(a.faceWidth,a.faceHeight,.7,[skin,skin,hairMat,skin,starFaceMaterial(player),skin]);group.add(headMesh);const top=a.faceHeight/2,front=.39;
-  if(a.style==='swept-forelock'){
-    hairPiece(group,0,top+.045,-.03,a.faceWidth+.025,.1,.7,hairMat);for(const [x,y,z,rz] of [[-.29,top+.12,.27,-.2],[-.17,top+.16,.3,-.14],[-.04,top+.18,.3,-.08],[.1,top+.15,.29,.1],[.24,top+.1,.28,.18],[-.19,top-.015,front,-.14],[-.07,top-.075,front,-.1],[.05,top-.02,front,.08]])hairPiece(group,x,y,z,.12,.2,.1,hairMat,rz)
-  }else if(a.style==='fluffy-curls'){
-    for(let row=0;row<3;row++)for(let col=0;col<5;col++){const x=-.3+col*.15,y=top+.08+((col+row)%3)*.055,z=-.23+row*.24;hairPiece(group,x,y,z,.135,.14,.15,hairMat,(col-2)*.035)}for(const [x,y] of [[-.29,top-.03],[-.15,top-.08],[0,top-.035],[.16,top-.09],[.3,top-.03]])hairPiece(group,x,y,front,.135,.17,.1,hairMat,x*.2)
-  }else if(a.style==='spiky-highlight-crop'){
-    hairPiece(group,0,top+.015,-.04,a.faceWidth,.075,.66,hairMat);for(let row=0;row<3;row++)for(let col=0;col<5;col++){const x=-.29+col*.145,y=top+.08+((col*2+row)%3)*.06,z=-.23+row*.23;hairPiece(group,x,y,z,.115,.16,.13,(col+row)%3===0?accent:hairMat,(col-2)*.055)}
-  }else if(a.style==='dark-golden-pageboy'){
-    hairPiece(group,0,top+.045,-.02,a.faceWidth+.04,.1,.72,hairMat);for(const side of [-1,1])for(let row=0;row<4;row++)hairPiece(group,side*(a.faceWidth/2+.045),top-.07-row*.145,-.04,.105,.16,.63,row===3?accent:hairMat,side*.04);for(let row=0;row<4;row++)for(const x of [-.24,-.08,.08,.24])hairPiece(group,x,top-.07-row*.14,-.4,.145,.15,.1,row===3?accent:hairMat);for(const [x,y,w,rz] of [[-.25,top+.05,.16,-.24],[-.12,top+.015,.17,-.18],[.02,top-.045,.18,-.13],[.16,top-.115,.17,-.09],[.28,top-.18,.13,-.04]])hairPiece(group,x,y,front,w,.18,.095,hairMat,rz)
-  }else if(a.style==='close-crop'){
-    for(let row=0;row<4;row++)for(let col=0;col<6;col++)hairPiece(group,-.31+col*.125,top+.025+((col+row)%2)*.015,-.27+row*.18,.105,.055,.13,hairMat)
-  }else if(a.style==='rounded-curly-top'){
-    for(let row=0;row<3;row++)for(let col=0;col<5;col++){const edge=Math.abs(col-2)*.018,x=-.29+col*.145,y=top+.1+((col+row)%2)*.06-edge,z=-.23+row*.23;hairPiece(group,x,y,z,.135,.15,.145,hairMat)}for(let col=0;col<5;col++)hairPiece(group,-.29+col*.145,top+.015+(col%2)*.035,front,.13,.12,.09,hairMat)
-  }else if(a.style==='short-blond-brush'){
-    hairPiece(group,0,top+.025,-.03,a.faceWidth+.01,.075,.68,hairMat);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=-.31+col*.125,y=top+.08+(2-col%3)*.028,z=-.25+row*.23;hairPiece(group,x,y,z,.11,.11,.13,hairMat,-.03)}
-  }else if(a.style==='bleached-tight-curls'){
-    hairPiece(group,0,top+.005,-.04,a.faceWidth,.055,.66,accent);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=-.31+col*.125,y=top+.065+((col+row)%2)*.04,z=-.24+row*.23;hairPiece(group,x,y,z,.105,.11,.12,(row===2&&col%2===0)?accent:hairMat)}
-  }else if(a.style==='blond-side-sweep'){
-    hairPiece(group,0,top+.035,-.02,a.faceWidth+.02,.085,.7,hairMat);for(const [x,y,w,rz] of [[-.29,top+.07,.14,-.14],[-.17,top+.12,.16,-.12],[-.03,top+.16,.18,-.08],[.12,top+.18,.2,.02],[.27,top+.14,.16,.12],[-.17,top-.02,.18,-.16],[-.01,top-.075,.2,-.14],[.16,top-.13,.19,-.08],[.29,top-.18,.12,-.02]])hairPiece(group,x,y,front,w,.14,.095,hairMat,rz)
-  }else{
-    hairPiece(group,0,top+.02,-.03,a.faceWidth+.015,.07,.68,hairMat);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=-.31+col*.125,y=top+.065+((col*3+row)%4)*.025,z=-.24+row*.23;hairPiece(group,x,y,z,.105,.105,.13,hairMat,(col-2.5)*.025)}for(const [x,y] of [[-.27,top-.02],[-.13,top-.07],[.01,top-.025],[.15,top-.08],[.28,top-.035]])hairPiece(group,x,y,front,.115,.12,.09,hairMat,x*.16)
-  }
-  group.userData={headMesh,style:a.style,faceStyle:STAR_FACE_STYLE};return group
+const HAIR_FRONT_PROFILES={
+  'swept-forelock':[{points:[[-.54,.66],[.54,.66],[.54,.2],[.49,.1],[.43,.18],[.25,.15],[.08,.13],[-.08,.13],[-.27,.16],[-.43,.11],[-.5,.2]]}],
+  'spiky-highlight-crop':[{points:[[-.55,.08],[-.62,.22],[-.5,.29],[-.47,.51],[-.34,.74],[-.21,.49],[-.04,.75],[.09,.49],[.25,.78],[.36,.5],[.47,.68],[.5,.31],[.62,.24],[.54,.08]]}],
+  'dark-golden-pageboy':[
+    {points:[[-.56,.7],[-.02,.7],[-.01,.42],[-.12,.3],[-.28,.12],[-.48,-.38],[-.56,-.28]]},
+    {points:[[.02,.7],[.56,.7],[.56,-.28],[.48,-.38],[.28,.12],[.12,.3],[.01,.42]]},
+  ],
+  'bleached-tight-curls':[
+    {material:'accent',points:[[-.56,.34],[.56,.34],[.56,.08],[-.56,.08]]},
+    {points:[[-.58,.33],[-.51,.52],[-.42,.39],[-.34,.61],[-.25,.4],[-.16,.64],[-.07,.4],[.04,.66],[.13,.4],[.23,.61],[.32,.4],[.42,.59],[.49,.4],[.58,.49],[.55,.29],[-.55,.29]]},
+  ],
+  'fluffy-curls':[{points:[[-.55,.12],[-.58,.33],[-.48,.5],[-.37,.66],[-.24,.5],[-.08,.75],[.1,.48],[.26,.61],[.43,.48],[.55,.58],[.58,.31],[.5,.08],[.42,.2],[.18,.19],[.06,.13],[-.15,.19],[-.34,.19],[-.47,.06]]}],
+  'rounded-curly-top':[{points:[[-.55,.1],[-.55,.53],[-.47,.69],[-.38,.51],[-.28,.75],[-.18,.51],[-.06,.72],[.04,.5],[.16,.7],[.27,.49],[.39,.66],[.48,.48],[.55,.55],[.55,.1],[.49,.18],[-.49,.18]]}],
+  'blond-side-sweep':[{points:[[-.55,.08],[-.55,.5],[-.43,.66],[-.27,.82],[-.08,.57],[.06,.69],[.27,.52],[.55,.51],[.55,.08],[.49,.18],[-.45,.19]]}],
+  'close-crop':[{points:[[-.55,.12],[-.55,.51],[.55,.51],[.55,.12]]}],
+  'short-blond-brush':[{points:[[-.55,.12],[-.55,.5],[.55,.5],[.55,.12]]}],
+  'messy-short-crop':[{points:[[-.55,.12],[-.55,.46],[-.44,.62],[-.28,.46],[-.12,.56],[.02,.47],[.17,.61],[.31,.46],[.46,.57],[.55,.45],[.55,.12],[.48,.18],[-.48,.18]]}],
+  'medong-side-part':[{points:[[-.55,.08],[-.55,.45],[-.43,.61],[-.3,.55],[-.02,.78],[.4,.47],[.55,.2],[.5,.08],[.43,.18],[-.43,.18]]}],
+};
+function createHairSilhouette(points,width,height,material,z=.356){const shape=new THREE.Shape();shape.moveTo(points[0][0]*width,points[0][1]*height);for(const [x,y] of points.slice(1))shape.lineTo(x*width,y*height);shape.closePath();const mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);mesh.position.z=z;mesh.castShadow=true;mesh.name='front-hair-silhouette';return mesh}
+function createStarHead(player){const a=player.appearance,group=new THREE.Group(),skin=starMaterial(player,'skin'),hairMat=starMaterial(player,'hair'),accent=starMaterial(player,'accent'),crownMat=a.style==='bleached-tight-curls'?accent:hairMat,headMesh=cube(a.faceWidth,a.faceHeight,.7,[skin,skin,crownMat,skin,starFaceMaterial(player),skin]),top=a.faceHeight/2;group.add(headMesh);
+  for(const part of HAIR_FRONT_PROFILES[a.style]||[])group.add(createHairSilhouette(part.points,a.faceWidth,a.faceHeight,part.material==='accent'?accent:hairMat));
+  const crown=cube(a.faceWidth+.035,.12,.72,crownMat),back=cube(a.faceWidth+.025,.18,.08,crownMat);crown.position.set(0,top+.045,-.02);back.position.set(0,top-.04,-.39);group.add(crown,back);
+  if(a.style==='dark-golden-pageboy'){const sideL=cube(.1,.48,.65,hairMat),sideR=sideL.clone(),bobBack=cube(a.faceWidth+.04,.5,.1,hairMat);sideL.position.set(-a.faceWidth/2-.035,top-.18,-.03);sideR.position.set(a.faceWidth/2+.035,top-.18,-.03);bobBack.position.set(0,top-.18,-.4);group.add(sideL,sideR,bobBack)}
+  group.userData={headMesh,style:a.style,faceStyle:STAR_FACE_STYLE,hairConstruction:'front-silhouette-plus-short-back'};return group
 }
 const heroStarHeads=RESCUE_PLAYERS.map(player=>{const starHead=createStarHead(player);starHead.position.y=2.27;starHead.scale.setScalar(1.1);starHead.visible=false;hero.add(starHead);return starHead});
 
@@ -288,19 +298,21 @@ for(const [i,player] of RESCUE_PLAYERS.entries()){
   fBody.position.y=1.25;fHead.position.y=2.08;fLeg1.position.set(-.25,.43,0);fLeg2.position.set(.25,.43,0);fArm1.position.set(-.62,1.25,0);fArm2.position.set(.62,1.25,0);follower.add(fBody,fHead,fLeg1,fLeg2,fArm1,fArm2);textSprite(player.name,0,3,0,.28,'#ffffff',follower);follower.visible=false;follower.userData={fLeg1,fLeg2,fArm1,fArm2,index:i};scene.add(follower);rescueFollowers.push(follower);rescueCages.push(cage);rescueKeys.push(key);
 }
 
-// 阿根廷蓝白 10 号“梅东”：深色短发与胡须的体素化追击者。
-function medongFaceMaterial(){const c=document.createElement('canvas');c.width=c.height=16;const q=c.getContext('2d');q.fillStyle='#d79a70';q.fillRect(0,0,16,16);q.fillStyle='#35231d';q.fillRect(1,0,14,4);q.fillRect(2,4,2,2);q.fillRect(12,4,2,2);q.fillRect(3,7,3,2);q.fillRect(10,7,3,2);q.fillRect(2,10,2,3);q.fillRect(12,10,2,3);q.fillRect(4,12,8,3);q.fillStyle='#f2c29d';q.fillRect(7,9,2,2);q.fillStyle='#d9d7cb';q.fillRect(6,12,4,1);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:1})}
+// 阿根廷蓝白 10 号“梅东”：参考图侧分短发，脸部统一为豆豆眼和微笑。
+function medongFaceMaterial(){const c=document.createElement('canvas');c.width=c.height=STAR_FACE_TEXTURE_SIZE;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.fillStyle='#d79a70';q.fillRect(0,0,STAR_FACE_TEXTURE_SIZE,STAR_FACE_TEXTURE_SIZE);q.fillStyle='#241b18';q.fillRect(18,31,3,7);q.fillRect(43,31,3,7);for(const [x,y,w] of [[17,48,3],[20,51,3],[23,53,4],[27,55,10],[37,53,4],[41,51,3],[44,48,3]])q.fillRect(x,y,w,2);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:1})}
 function medongJerseyMaterial(back=false){const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.fillStyle='#f2f1e8';q.fillRect(0,0,32,32);q.fillStyle='#74c8ee';for(let x=0;x<32;x+=12)q.fillRect(x,0,7,32);q.fillStyle='#172d4f';q.fillRect(12,0,8,3);q.font=`900 ${back?18:12}px monospace`;q.textAlign='center';q.textBaseline='middle';q.fillText('10',16,back?18:20);q.fillStyle='#d7af37';q.fillRect(14,5,4,3);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.9})}
-const argentinaBlue=new THREE.MeshStandardMaterial({color:0x74c8ee,roughness:.9}),argentinaWhite=new THREE.MeshStandardMaterial({color:0xf2f1e8,roughness:.95}),argentinaNavy=new THREE.MeshStandardMaterial({color:0x162c50,roughness:.9}),medongHair=new THREE.MeshStandardMaterial({color:0x34231d,roughness:1}),medongFront=medongJerseyMaterial(),medongBack=medongJerseyMaterial(true),hunter=new THREE.Group(),medongRig=new THREE.Group();scene.add(hunter);hunter.add(medongRig);
+const argentinaBlue=new THREE.MeshStandardMaterial({color:0x74c8ee,roughness:.9}),argentinaWhite=new THREE.MeshStandardMaterial({color:0xf2f1e8,roughness:.95}),argentinaNavy=new THREE.MeshStandardMaterial({color:0x162c50,roughness:.9}),medongHair=new THREE.MeshStandardMaterial({color:0x050505,roughness:1}),medongFront=medongJerseyMaterial(),medongBack=medongJerseyMaterial(true),hunter=new THREE.Group(),medongRig=new THREE.Group();scene.add(hunter);hunter.add(medongRig);
 const hBody=cube(1.12,1.12,.7,[argentinaBlue,argentinaBlue,argentinaWhite,argentinaNavy,medongFront,medongBack]),hHead=cube(.86,.84,.8,[M.skin,M.skin,medongHair,M.skin,medongFaceMaterial(),M.skin]),hHair=cube(.88,.25,.82,medongHair),hShorts=cube(1.08,.38,.7,argentinaNavy),hLeg1=cube(.42,.7,.46,argentinaWhite),hLeg2=cube(.42,.7,.46,argentinaWhite),hArm1=cube(.31,.96,.37,M.skin),hArm2=cube(.31,.96,.37,M.skin),hShoe1=cube(.45,.2,.6,M.black),hShoe2=hShoe1.clone();
+const hFrontHair=createHairSilhouette(HAIR_FRONT_PROFILES['medong-side-part'][0].points,.86,.84,medongHair,.406);hHead.add(hFrontHair);
 hBody.position.y=1.45;hHead.position.y=2.3;hHair.position.y=2.67;hShorts.position.y=.88;hLeg1.position.set(-.3,.47,0);hLeg2.position.set(.3,.47,0);hArm1.position.set(-.75,1.48,0);hArm2.position.set(.75,1.48,0);hShoe1.position.set(-.3,.12,.1);hShoe2.position.set(.3,.12,.1);medongRig.add(hBody,hHead,hHair,hShorts,hLeg1,hLeg2,hArm1,hArm2,hShoe1,hShoe2);const hunterName=textSprite('★ 10  梅东',0,3.38,0,.38,'#8edcff',medongRig);
+const heroMedongFrontHair=createHairSilhouette(HAIR_FRONT_PROFILES['medong-side-part'][0].points,.82,.82,medongHair,.396);heroMedongFrontHair.position.y=2.27;heroMedongFrontHair.visible=false;hero.add(heroMedongFrontHair);
 const SKIN_PROFILE_KEY='block-break-skin-profile-v1';
 function loadSkinProfile(){try{const saved=JSON.parse(localStorage.getItem(SKIN_PROFILE_KEY)||'{}');return{claimedMedong:Boolean(saved.claimedMedong),rescueCompleted:Boolean(saved.rescueCompleted),selected:typeof saved.selected==='string'?saved.selected:'prisoner'}}catch{return{claimedMedong:false,rescueCompleted:false,selected:'prisoner'}}}
 const skinProfile=loadSkinProfile();
 function saveSkinProfile(){try{localStorage.setItem(SKIN_PROFILE_KEY,JSON.stringify(skinProfile))}catch{}}
 function availableSkinIds(){return new Set(unlockedSkinIds(skinProfile))}
-function applyHeroSkin(){const available=availableSkinIds();if(!available.has(skinProfile.selected))skinProfile.selected='prisoner';const skin=SKIN_CATALOG.find(item=>item.id===skinProfile.selected)||SKIN_CATALOG[0];for(const starHead of heroStarHeads)starHead.visible=false;head.visible=hair.visible=true;ponytail.visible=skin.id==='ponytail';arm1.material=arm2.material=M.skin;shoe1.material=shoe2.material=M.black;
-  if(skin.id==='medong'){body.material=hBody.material;leg1.material=leg2.material=argentinaWhite;head.material=hHead.material;hair.material=ponytail.material=medongHair}
+function applyHeroSkin(){const available=availableSkinIds();if(!available.has(skinProfile.selected))skinProfile.selected='prisoner';const skin=SKIN_CATALOG.find(item=>item.id===skinProfile.selected)||SKIN_CATALOG[0];for(const starHead of heroStarHeads)starHead.visible=false;heroMedongFrontHair.visible=false;head.visible=hair.visible=true;ponytail.visible=skin.id==='ponytail';arm1.material=arm2.material=M.skin;shoe1.material=shoe2.material=M.black;
+  if(skin.id==='medong'){body.material=hBody.material;leg1.material=leg2.material=argentinaWhite;head.material=hHead.material;hair.material=ponytail.material=medongHair;heroMedongFrontHair.visible=true}
   else if(skin.kind==='rescue'){const index=Number(skin.id.split('-')[1]),player=RESCUE_PLAYERS[index],kit=nationalKit(player);body.material=kit.body;leg1.material=leg2.material=kit.shorts;head.visible=hair.visible=ponytail.visible=false;heroStarHeads[index].visible=true;arm1.material=arm2.material=starMaterial(player,'skin')}
   else{body.material=leg1.material=leg2.material=M.orange;head.material=[M.skin,M.skin,M.hair,M.skin,heroFace,M.skin];hair.material=ponytail.material=M.hair}
   selectedSkinName.textContent=skin.name;saveSkinProfile()
