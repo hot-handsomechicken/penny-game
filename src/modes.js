@@ -22,14 +22,23 @@ export const RESCUE_PLAYERS=[
 
 export const RESCUE_BUFF_LABELS=Object.freeze({attack:'攻击力',strength:'力量',jump:'弹跳',speed:'速度'});
 export const RESCUE_BUFF_EFFECTS=Object.freeze({attackDamage:1,strengthRange:.16,strengthKnockback:.16,jumpVelocity:.65,speed:.55});
+export const STAGE14_TUNING=Object.freeze({staticBeamZ:416,staticBeamWidth:7.4,rotatingArmLength:6.2,rotatingArmSpeed:.48,hitPadding:.08,hunterSpawnOffset:7});
 export function rescueBuffTotals(rescuedIndices=[]){
   const totals={attack:0,strength:0,jump:0,speed:0};
   for(const index of rescuedIndices){const type=RESCUE_PLAYERS[index]?.buff;if(type)totals[type]++}
   return totals;
 }
+export function hunterSpawnForStage(stage,{isMech=false,stageLength=30}={}){
+  if(isMech)return{x:0,z:stage*stageLength+22};
+  if(stage===13)return{x:0,z:stage*stageLength+STAGE14_TUNING.hunterSpawnOffset};
+  return{x:stage%2?4:-4,z:stage*stageLength+16};
+}
 export function launchShortcut(search=''){
   const params=new URLSearchParams(search);
-  return params.get('play')==='rescue-toilet'?{mode:'rescue',stage:10,rescuedIndices:RESCUE_PLAYERS.map((_,index)=>index)}:null;
+  const play=params.get('play'),rescuedIndices=RESCUE_PLAYERS.map((_,index)=>index);
+  if(play==='rescue-toilet')return{mode:'rescue',stage:10,rescuedIndices};
+  if(play==='rescue-stage14')return{mode:'rescue',stage:13,rescuedIndices};
+  return null;
 }
 
 export const SKIN_CATALOG=[

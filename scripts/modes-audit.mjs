@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
@@ -11,7 +11,12 @@ assert.ok(7.2+2*RESCUE_BUFF_EFFECTS.speed<8.5);
 assert.ok(10+2*RESCUE_BUFF_EFFECTS.jumpVelocity<11.5);
 assert.ok(3.45+3*RESCUE_BUFF_EFFECTS.strengthRange<4);
 assert.deepEqual(launchShortcut('?play=rescue-toilet'),{mode:'rescue',stage:10,rescuedIndices:[0,1,2,3,4,5,6,7,8,9]});
+assert.deepEqual(launchShortcut('?play=rescue-stage14'),{mode:'rescue',stage:13,rescuedIndices:[0,1,2,3,4,5,6,7,8,9]});
 assert.equal(launchShortcut('?play=escape'),null);
+assert.deepEqual(hunterSpawnForStage(13),{x:0,z:397});
+assert.deepEqual(hunterSpawnForStage(19,{isMech:true}),{x:0,z:592});
+assert.ok(STAGE14_TUNING.rotatingArmSpeed<=.5&&STAGE14_TUNING.rotatingArmLength<=6.2&&STAGE14_TUNING.hitPadding<=.08);
+assert.ok(Math.abs(hunterSpawnForStage(13).x-4.9)>2.6/2+.58,'第 14 关梅东出生点不得卡在右侧维修台内');
 assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.style)).size,10);
 assert.equal(new Set(RESCUE_PLAYERS.map(player=>player.appearance.hair)).size,10);
 assert.equal(STAR_FACE_STYLE,'dot-eyes-smile');
@@ -74,5 +79,7 @@ console.log('PASS  获救球员平时松散跟随，战斗时全部收拢在玩�
 console.log('PASS  十位球星按指定分组提供攻击、力量、弹跳与速度增益');
 console.log('PASS  满级速度、弹跳和攻击范围增益保持在关卡安全上限内');
 console.log('PASS  厕所试玩链接会直达拯救模式第 11 关并预救全部十位球员');
+console.log('PASS  第 14 关梅东出生在中央安全地面，重生后也不会卡进维修台');
+console.log('PASS  第 14 关仅保留后段横杆，旋转臂长度、转速与碰撞余量均已降低');
 console.log('PASS  厕所正确出口永久固定为从左往右第二个隔间');
 console.log('PASS  普通与拯救模式第 12 关均禁用梅东战斗与血条');

@@ -5,7 +5,7 @@ import './responsive.css';
 import './settings.css';
 import './modes.css';
 import {AudioSystem} from './audio.js';
-import {MEDONG_APPEARANCE,MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
+import {MEDONG_APPEARANCE,MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
 import {
   HERO_HEIGHT,
   HERO_RADIUS,
@@ -128,8 +128,8 @@ textSprite('COLD STORAGE',0,4.7,364,.62,'#a9f3ff');
 
 // 维修竖井：维修台、低位蒸汽管与旋转阀臂
 for(let z=397,k=0;z<=417;z+=5,k++)box(k%2?-4.9:4.9,.65,z,2.6,1.3,2.2,M.metal,true);
-for(const z of [400,416])danger(0,.57,z,11.5,.25,.38,M.hazard);
-{const pivot=new THREE.Group();pivot.position.set(0,.58,408);world.add(pivot);const arm=box(0,0,0,9,.3,.42,M.hazard,false,true,pivot);hazards.push(arm);pivot.userData={rotate:true,speed:1.05};movers.push(pivot)}
+{const beam=danger(0,.5,STAGE14_TUNING.staticBeamZ,STAGE14_TUNING.staticBeamWidth,.18,.3,M.hazard);beam.userData.hitPad=STAGE14_TUNING.hitPadding}
+{const pivot=new THREE.Group();pivot.position.set(0,.5,408);world.add(pivot);const arm=box(0,0,0,STAGE14_TUNING.rotatingArmLength,.22,.34,M.hazard,false,true,pivot);arm.userData.hitPad=STAGE14_TUNING.hitPadding;hazards.push(arm);pivot.userData={rotate:true,speed:STAGE14_TUNING.rotatingArmSpeed};movers.push(pivot)}
 
 // 守卫营房：床铺之间交错的警戒线
 for(const z of [425,432,439,446]){bunk(-5.2,z,-1);bunk(5.2,z,1)}
@@ -427,8 +427,9 @@ function fireMoneyGun(){
 function haptic(pattern){if(mobileDevice)navigator.vibrate?.(pattern)}
 function spawnHunter(stage){
   const isMech=state.mode==='escape'&&stage===LAST_STAGE,encounterIndex=encounterStages.indexOf(stage);hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=state.mode==='rescue'?rescueHunterHp(stage):hunterMaxHpForEncounter(encounterIndex);hunterState.hitFlash=0;hunterState.lastUiMode='';configureHunterForm(isMech);resetHunterBrain(hunterState,isMech?2.4:.8);
-  if(isMech){resetMechArms();hunter.position.set(0,.02,stage*STAGE_LENGTH+22);hunterTitle.textContent='⚠ 梅东机甲 · 双臂弱点';hunterMainBar.classList.add('hidden');mechArms.classList.remove('hidden');attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪';aimReticle.classList.toggle('hidden',!state.moneyGun);announce('⚠ 梅东机甲启动 · 只有手臂会受伤！')}
-  else{hunter.position.set(stage%2?4:-4,.02,stage*STAGE_LENGTH+16);hunterTitle.textContent=state.mode==='rescue'?'⚠ 强化梅东 · 呼叫队友':'⚠ 梅东 · 阿根廷10号';hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');attackLabel.textContent='攻击 [F]';aimReticle.classList.add('hidden');missionEl.textContent=state.mode==='rescue'?'与获救球员一起击退梅东':'击败梅东，解除封锁';updateHunterHud();announce(`⚠ 梅东出现 · 生命 ${hunterState.maxHp}`)}
+  const spawn=hunterSpawnForStage(stage,{isMech,stageLength:STAGE_LENGTH});hunter.position.set(spawn.x,.02,spawn.z);
+  if(isMech){resetMechArms();hunterTitle.textContent='⚠ 梅东机甲 · 双臂弱点';hunterMainBar.classList.add('hidden');mechArms.classList.remove('hidden');attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪';aimReticle.classList.toggle('hidden',!state.moneyGun);announce('⚠ 梅东机甲启动 · 只有手臂会受伤！')}
+  else{hunterTitle.textContent=state.mode==='rescue'?'⚠ 强化梅东 · 呼叫队友':'⚠ 梅东 · 阿根廷10号';hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');attackLabel.textContent='攻击 [F]';aimReticle.classList.add('hidden');missionEl.textContent=state.mode==='rescue'?'与获救球员一起击退梅东':'击败梅东，解除封锁';updateHunterHud();announce(`⚠ 梅东出现 · 生命 ${hunterState.maxHp}`)}
   hunter.visible=true;hunterWarning.visible=false;lockGate(stage,true);hunterHud.classList.remove('hidden');attackButton.classList.remove('hidden');updateHunterIntent(true);haptic([40,35,40])
 }
 function defeatHunter(){const wasMech=hunterState.isMech;hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;setHunterBodyGlow(0x000000);lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');aimReticle.classList.add('hidden');weaponHud.classList.add('hidden');moneyGunModel.visible=false;missionEl.textContent=wasMech?'机甲摧毁 · 登上直升机撤离':state.mode==='rescue'?activeMissions()[state.stage]:'封锁解除 · 前往下一个检查点';announce(wasMech?'✓ 两条机械臂已摧毁 · 梅东机甲失效':state.mode==='rescue'?'✓ 队友合力击退梅东':'✓ 梅东已被击退 · 封锁解除');beep(wasMech?1080:920,wasMech?.42:.28);haptic([30,40,70])}
@@ -479,7 +480,7 @@ function reset(full=false){
   }else if(state.mode==='math'){
     startMathStage(state.stage)
   }else if(hunterState.active){
-    hunterState.hp=hunterState.maxHp;hunterState.hitFlash=0;resetHunterBrain(hunterState,hunterState.isMech?2.4:1);hunter.position.set(hunterState.isMech?0:hunterState.stage%2?4:-4,.02,hunterState.stage*STAGE_LENGTH+(hunterState.isMech?22:16));hunterWarning.visible=false;lockGate(hunterState.stage,true);if(hunterState.isMech){resetMechArms();attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';aimReticle.classList.toggle('hidden',!state.moneyGun);missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪'}else updateHunterHud();updateHunterIntent(true)
+    hunterState.hp=hunterState.maxHp;hunterState.hitFlash=0;resetHunterBrain(hunterState,hunterState.isMech?2.4:1);const spawn=hunterSpawnForStage(hunterState.stage,{isMech:hunterState.isMech,stageLength:STAGE_LENGTH});hunter.position.set(spawn.x,.02,spawn.z);hunterWarning.visible=false;lockGate(hunterState.stage,true);if(hunterState.isMech){resetMechArms();attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';aimReticle.classList.toggle('hidden',!state.moneyGun);missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪'}else updateHunterHud();updateHunterIntent(true)
   }
   if(state.mode==='rescue')syncRescueObjects();hero.position.copy(state.checkpoint);hero.visible=true;state.velocity.set(0,0,0);state.grounded=true;state.coyote=.1;state.jumpBuffer=0;state.attackCooldown=0;state.attackAnim=0;state.combo=0;state.comboTimer=0;attackButton.classList.remove('cooldown')
 }
@@ -548,7 +549,7 @@ function tick(t){requestAnimationFrame(tick);const dt=Math.min((t-state.last)/10
     }
     updateMoneyShots(dt);
     audio.update({moving:dir.lengthSq()>.1,grounded:state.grounded,hunter:hunterState.active,now:t/1000});
-    for(const h of hazards){if(!objectEnabledForMode(h)||Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hitHazard(h,.28)){die('触碰危险机关');break}}
+    for(const h of hazards){if(!objectEnabledForMode(h)||Math.abs(h.userData.stageIndex-nearbyStage)>1)continue;if(hitHazard(h,h.userData.hitPad??.28)){die('触碰危险机关');break}}
     if(Math.abs(hero.position.x)>7.2||hero.position.y < -3)die();
     // Crossing the front edge of a checkpoint pad activates that respawn point.
     const si=Math.max(0,Math.min(activeLastStage(),Math.floor((hero.position.z-1)/STAGE_LENGTH)));if(si>state.stage)updateStage(si);
@@ -580,7 +581,7 @@ let touchX=0,touchY=0,jumpTap=false,stickPointerId=null;const stick=document.que
 attackButton.addEventListener('pointerdown',e=>{e.stopPropagation();doAttack()});
 mathPanel.addEventListener('submit',event=>{event.preventDefault();if(!state.mathQuestion)return;if(isMathAnswerCorrect(state.mathQuestion,mathAnswer.value)){announce(`✓ ${MEDONG_PRAISE[Math.floor(Math.random()*MEDONG_PRAISE.length)]}`);beep(820,.18);if(state.stage===activeLastStage())completeGame();else startMathStage(state.stage+1)}else die('答错了，被梅东老师直接击败')});
 function startMode(mode){state.mode=mode;document.querySelector('#start').classList.add('hidden');state.started=true;state.start=performance.now();audio.start();reset(true);showBest()}
-function startShortcut(config){startMode(config.mode);for(const index of config.rescuedIndices){rescueState.keys.add(index);rescueState.rescued.add(index)}syncRescueObjects();updateStage(config.stage);hero.position.copy(state.checkpoint);state.velocity.set(0,0,0);skinReward.classList.add('hidden');announce('🚻 厕所关卡试玩 · 10 位球员与全部增益已就绪')}
+function startShortcut(config){startMode(config.mode);for(const index of config.rescuedIndices){rescueState.keys.add(index);rescueState.rescued.add(index)}syncRescueObjects();updateStage(config.stage);hero.position.copy(state.checkpoint);state.velocity.set(0,0,0);skinReward.classList.add('hidden');announce(config.stage===13?'🔧 第 14 关试玩 · 梅东即将进入安全战区':'🚻 厕所关卡试玩 · 10 位球员与全部增益已就绪')}
 function returnToModes(){state.started=false;state.won=false;state.paused=false;resetToiletDoors();pauseMenu.classList.add('hidden');document.querySelector('#win').classList.add('hidden');mathPanel.classList.add('hidden');rescueHud.classList.add('hidden');hunter.visible=false;hunterHud.classList.add('hidden');attackButton.classList.add('hidden');for(const follower of rescueFollowers)follower.visible=false;audio.pause();document.querySelector('#start').classList.remove('hidden')}
 document.querySelector('#play').onclick=()=>startMode('escape');document.querySelector('#playMath').onclick=()=>startMode('math');document.querySelector('#playRescue').onclick=()=>startMode('rescue');document.querySelector('#reset').onclick=()=>reset(true);document.querySelector('#again').onclick=()=>reset(true);document.querySelector('#changeMode').onclick=returnToModes;document.querySelector('#changeModeWin').onclick=returnToModes;let sound=true;document.querySelector('#sound').onclick=e=>{sound=!sound;audio.setEnabled(sound);e.currentTarget.textContent=sound?'🔊':'🔇'};document.querySelector('#pauseButton').onclick=()=>setPaused(true);document.querySelector('#resume').onclick=()=>setPaused(false);document.querySelector('#pauseRestart').onclick=()=>{reset(true);audio.resume()};qualitySelect.onchange=e=>{autoDegraded=false;perfState.lowSamples=0;applyQuality(e.target.value);announce(`画质：${e.target.selectedOptions[0].text}`)};
 for(const id of ['skins','openSkins','winSkins'])document.querySelector(`#${id}`).onclick=openWardrobe;document.querySelector('#closeSkins').onclick=closeWardrobe;document.querySelector('#claimMedong').onclick=()=>{skinProfile.claimedMedong=true;skinProfile.selected='medong';saveSkinProfile();skinReward.classList.add('hidden');applyHeroSkin();renderSkinGrid();announce('✓ 梅东皮肤已永久领取')};
