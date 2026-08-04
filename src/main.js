@@ -5,7 +5,7 @@ import './responsive.css';
 import './settings.css';
 import './modes.css';
 import {AudioSystem} from './audio.js';
-import {MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
+import {MEDONG_APPEARANCE,MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
 import {
   HERO_HEIGHT,
   HERO_RADIUS,
@@ -204,13 +204,14 @@ for(const dividerX of [-6.75,-3.4,0,3.4,6.75])toiletBox(dividerX,1.75,349,.18,3.
 toiletBox(0,3.55,349,13.5,.22,10,toiletWall,true);toiletBox(0,1.8,354,13.5,3.6,.3,toiletWall,true);
 textSprite('四扇门 · 只有一条生路',0,6.15,339,.55,'#ffdf82',escapeToiletWorld);
 function buildToiletFixture(parent){toiletBox(0,.44,.35,1.1,.5,1.25,M.white,false,true,parent);toiletBox(0,.9,.78,1.05,1.2,.45,M.white,false,true,parent);toiletBox(0,.72,-.08,.72,.26,.8,M.black,false,true,parent)}
+const toiletMedongFace=medongFaceMaterial();
 for(const x of stallCenters){
   const pivot=new THREE.Group();pivot.position.set(x-1.08,0,stallDoorZ);escapeToiletWorld.add(pivot);const door=toiletBox(1.08,1.38,0,2.16,2.76,.18,toiletDoorMaterial,false,true,pivot);toiletBox(1.78,1.35,-.13,.13,.13,.15,M.greenOff,false,true,pivot);pivot.userData={targetRotation:0,door};toiletDoors.push(pivot);
   const collider=toiletBox(x,1.38,stallDoorZ,2.2,2.76,.24,toiletInvisible,true,false);collider.userData.dynamicBounds=true;toiletDoorColliders.push(collider);
   const tunnel=new THREE.Group(),corpse=new THREE.Group(),medong=new THREE.Group();for(const content of [tunnel,corpse,medong]){content.position.set(x,0,349);content.visible=false;escapeToiletWorld.add(content)}
   toiletBox(0,.025,0,2.15,.05,2.45,M.black,false,false,tunnel);for(const dx of [-1.18,1.18])toiletBox(dx,.12,0,.18,.24,2.7,M.rust,false,true,tunnel);textSprite('下水道入口',0,1.15,.3,.3,'#9ed9b5',tunnel);
   buildToiletFixture(corpse);toiletBox(0,1.25,.12,.72,.48,1.15,M.toxic,false,true,corpse);toiletBox(0,1.62,-.2,.64,.55,.62,M.skin,false,true,corpse);textSprite('☠  发臭',0,2.85,.3,.3,'#b7e05b',corpse);
-  buildToiletFixture(medong);toiletBox(0,1.42,.33,1.02,1.05,.66,toiletMedongBlue,false,true,medong);toiletBox(0,2.2,.18,.76,.76,.7,M.skin,false,true,medong);toiletBox(0,2.55,.16,.8,.24,.72,M.hair,false,true,medong);toiletBox(-.55,1.45,.05,.26,.82,.3,M.skin,false,true,medong);toiletBox(.55,1.45,.05,.26,.82,.3,M.skin,false,true,medong);textSprite('梅东',0,3.15,.25,.28,'#8edcff',medong);
+  buildToiletFixture(medong);toiletBox(0,1.42,.33,1.02,1.05,.66,toiletMedongBlue,false,true,medong);toiletBox(0,2.2,.18,.76,.76,.7,[M.skin,M.skin,M.hair,M.skin,toiletMedongFace,M.skin],false,true,medong);toiletBox(0,2.55,.16,.8,.24,.72,M.hair,false,true,medong);toiletBox(-.55,1.45,.05,.26,.82,.3,M.skin,false,true,medong);toiletBox(.55,1.45,.05,.26,.82,.3,M.skin,false,true,medong);textSprite('梅东',0,3.15,.25,.28,'#8edcff',medong);
   toiletContents.push({tunnel,corpse,medong});
 }
 
@@ -263,10 +264,16 @@ function paintFineFringe(q,player){q.fillStyle=colorCss(player.appearance.hair);
     canvasPolygon(q,[[25,9],[31,10],[31,18],[29,25],[26,21]]);canvasPolygon(q,[[34,9],[40,10],[39,18],[36,25],[34,20]]);
   }
 }
+function paintPixelBeard(q,color){q.fillStyle=colorCss(color);
+  // 短络腮胡沿两侧下颌收拢，嘴上方保留两小段胡须，避免遮住统一的微笑表情。
+  for(const [x,y,w,h] of [[13,42,4,11],[47,42,4,11],[16,51,4,6],[44,51,4,6],[20,55,5,5],[39,55,5,5],[25,58,14,4],[23,46,8,2],[34,46,8,2]])q.fillRect(x,y,w,h);
+}
 function starFaceMaterial(player){const key=`${player.name}-${STAR_FACE_STYLE}`;if(starMaterials.has(key))return starMaterials.get(key);const a=player.appearance,c=document.createElement('canvas');c.width=c.height=STAR_FACE_TEXTURE_SIZE;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.fillStyle=colorCss(a.skin);q.fillRect(0,0,STAR_FACE_TEXTURE_SIZE,STAR_FACE_TEXTURE_SIZE);
   paintFineFringe(q,player);
-  // 全员统一的极简 Roblox 像素脸：刘海下方只保留小豆豆眼和微笑。
+  // 全员统一的极简 Roblox 像素脸；有胡须的角色仍保留清楚的豆豆眼和微笑。
   q.fillStyle='#241b18';q.fillRect(18,31,3,7);q.fillRect(43,31,3,7);
+  if(a.beard)paintPixelBeard(q,a.beard);
+  q.fillStyle='#241b18';
   for(const [x,y,w] of [[17,48,3],[20,51,3],[23,53,4],[27,55,10],[37,53,4],[41,51,3],[44,48,3]])q.fillRect(x,y,w,2);
   const texture=new THREE.CanvasTexture(c);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestMipmapLinearFilter;texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,roughness:1});starMaterials.set(key,mat);return mat
 }
@@ -310,8 +317,8 @@ for(const [i,player] of RESCUE_PLAYERS.entries()){
   fBody.position.y=1.25;fHead.position.y=2.08;fLeg1.position.set(-.25,.43,0);fLeg2.position.set(.25,.43,0);fArm1.position.set(-.62,1.25,0);fArm2.position.set(.62,1.25,0);follower.add(fBody,fHead,fLeg1,fLeg2,fArm1,fArm2);textSprite(player.name,0,3,0,.28,'#ffffff',follower);follower.visible=false;follower.userData={fLeg1,fLeg2,fArm1,fArm2,index:i};scene.add(follower);rescueFollowers.push(follower);rescueCages.push(cage);rescueKeys.push(key);
 }
 
-// 阿根廷蓝白 10 号“梅东”：参考图侧分短发，脸部统一为豆豆眼和微笑。
-function medongFaceMaterial(){const c=document.createElement('canvas');c.width=c.height=STAR_FACE_TEXTURE_SIZE;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.fillStyle='#d79a70';q.fillRect(0,0,STAR_FACE_TEXTURE_SIZE,STAR_FACE_TEXTURE_SIZE);q.fillStyle='#241b18';q.fillRect(18,31,3,7);q.fillRect(43,31,3,7);for(const [x,y,w] of [[17,48,3],[20,51,3],[23,53,4],[27,55,10],[37,53,4],[41,51,3],[44,48,3]])q.fillRect(x,y,w,2);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:1})}
+// 阿根廷蓝白 10 号“梅东”：参考图侧分短发，豆豆眼微笑脸配深棕色短胡须。
+function medongFaceMaterial(){const c=document.createElement('canvas');c.width=c.height=STAR_FACE_TEXTURE_SIZE;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.fillStyle='#d79a70';q.fillRect(0,0,STAR_FACE_TEXTURE_SIZE,STAR_FACE_TEXTURE_SIZE);q.fillStyle='#241b18';q.fillRect(18,31,3,7);q.fillRect(43,31,3,7);paintPixelBeard(q,MEDONG_APPEARANCE.beard);q.fillStyle='#241b18';for(const [x,y,w] of [[17,48,3],[20,51,3],[23,53,4],[27,55,10],[37,53,4],[41,51,3],[44,48,3]])q.fillRect(x,y,w,2);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:1})}
 function medongJerseyMaterial(back=false){const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.fillStyle='#f2f1e8';q.fillRect(0,0,32,32);q.fillStyle='#74c8ee';for(let x=0;x<32;x+=12)q.fillRect(x,0,7,32);q.fillStyle='#172d4f';q.fillRect(12,0,8,3);q.font=`900 ${back?18:12}px monospace`;q.textAlign='center';q.textBaseline='middle';q.fillText('10',16,back?18:20);q.fillStyle='#d7af37';q.fillRect(14,5,4,3);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.9})}
 const argentinaBlue=new THREE.MeshStandardMaterial({color:0x74c8ee,roughness:.9}),argentinaWhite=new THREE.MeshStandardMaterial({color:0xf2f1e8,roughness:.95}),argentinaNavy=new THREE.MeshStandardMaterial({color:0x162c50,roughness:.9}),medongHair=new THREE.MeshStandardMaterial({color:0x050505,roughness:1}),medongFront=medongJerseyMaterial(),medongBack=medongJerseyMaterial(true),hunter=new THREE.Group(),medongRig=new THREE.Group();scene.add(hunter);hunter.add(medongRig);
 const hBody=cube(1.12,1.12,.7,[argentinaBlue,argentinaBlue,argentinaWhite,argentinaNavy,medongFront,medongBack]),hHead=cube(.86,.84,.8,[M.skin,M.skin,medongHair,M.skin,medongFaceMaterial(),M.skin]),hHair=cube(.88,.25,.82,medongHair),hBackHair=cube(.89,.86,.1,medongHair),hShorts=cube(1.08,.38,.7,argentinaNavy),hLeg1=cube(.42,.7,.46,argentinaWhite),hLeg2=cube(.42,.7,.46,argentinaWhite),hArm1=cube(.31,.96,.37,M.skin),hArm2=cube(.31,.96,.37,M.skin),hShoe1=cube(.45,.2,.6,M.black),hShoe2=hShoe1.clone();

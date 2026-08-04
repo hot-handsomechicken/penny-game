@@ -5,6 +5,7 @@ export const MODE_CONFIG={
 };
 export const STAR_FACE_TEXTURE_SIZE=64;
 export const STAR_FACE_STYLE='dot-eyes-smile';
+export const MEDONG_APPEARANCE=Object.freeze({beard:0x3a251d,facialHair:'short-full-beard'});
 
 export const RESCUE_PLAYERS=[
   {name:'B罗',buff:'attack',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f,appearance:{skin:0xd09a72,hair:0x190d07,style:'swept-forelock',faceWidth:.75,faceHeight:.74}},
@@ -15,7 +16,7 @@ export const RESCUE_PLAYERS=[
   {name:'朱古力',buff:'speed',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0x7e503a,hair:0x1d0f08,style:'rounded-curly-top',faceWidth:.74,faceHeight:.76}},
   {name:'哈哈哈',buff:'speed',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54,appearance:{skin:0xe5bb98,hair:0xefd2a5,style:'short-blond-brush',faceWidth:.73,faceHeight:.82}},
   {name:'小孩哥',buff:'strength',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70,appearance:{skin:0x9e6549,hair:0x918979,hairAccent:0x12100e,style:'bleached-tight-curls',faceWidth:.72,faceHeight:.73}},
-  {name:'小美叔叔',buff:'jump',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0xa68f6c,style:'blond-side-sweep',faceWidth:.76,faceHeight:.78}},
+  {name:'小美叔叔',buff:'jump',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xdbac89,hair:0xa68f6c,beard:0x76583d,facialHair:'short-full-beard',style:'blond-side-sweep',faceWidth:.76,faceHeight:.78}},
   {name:'德克米',buff:'jump',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x100d0b,style:'messy-short-crop',faceWidth:.74,faceHeight:.74}},
 ];
 

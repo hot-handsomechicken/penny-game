@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
@@ -20,6 +20,8 @@ const bro=RESCUE_PLAYERS.find(player=>player.name==='B罗');assert.equal(bro.cou
 assert.equal(bro.appearance.style,'swept-forelock');
 assert.equal(RESCUE_PLAYERS.find(player=>player.name==='德克米').appearance.style,'messy-short-crop');
 assert.equal(RESCUE_PLAYERS.find(player=>player.name==='黄金小兔兔').appearance.style,'dark-golden-pageboy');
+const beardedStars=RESCUE_PLAYERS.filter(player=>player.appearance.facialHair==='short-full-beard');assert.deepEqual(beardedStars.map(player=>player.name),['小美叔叔']);assert.ok(Number.isInteger(beardedStars[0].appearance.beard));
+assert.equal(MEDONG_APPEARANCE.facialHair,'short-full-beard');assert.ok(Number.isInteger(MEDONG_APPEARANCE.beard));
 assert.deepEqual([...new Set(RESCUE_PLAYERS.map(player=>player.country))].sort(),['克罗地亚','巴西','挪威','法国','英格兰','葡萄牙','西班牙'].sort());
 assert.equal(SKIN_CATALOG.length,13);
 assert.deepEqual(unlockedSkinIds(),['prisoner','ponytail']);
@@ -67,6 +69,7 @@ console.log('PASS  默认、领取与通关奖励皮肤解锁规则正确');
 console.log('PASS  十位球星均配有国家队、球衣主辅色、短裤和号码');
 console.log('PASS  十位球星拥有十种独立小像素发型，并统一使用豆豆眼微笑脸');
 console.log('PASS  B罗、德克米细刘海与黄金小兔兔短妹妹头映射已锁定');
+console.log('PASS  小美叔叔与梅东分别使用符合发色的像素短胡须');
 console.log('PASS  获救球员平时松散跟随，战斗时全部收拢在玩家身边');
 console.log('PASS  十位球星按指定分组提供攻击、力量、弹跳与速度增益');
 console.log('PASS  满级速度、弹跳和攻击范围增益保持在关卡安全上限内');
