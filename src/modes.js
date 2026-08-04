@@ -38,6 +38,7 @@ export function launchShortcut(search=''){
   const play=params.get('play'),rescuedIndices=RESCUE_PLAYERS.map((_,index)=>index);
   if(play==='rescue-toilet')return{mode:'rescue',stage:10,rescuedIndices};
   if(play==='rescue-stage14')return{mode:'rescue',stage:13,rescuedIndices};
+  if(play==='final-boss')return{mode:'escape',stage:19,rescuedIndices:[]};
   return null;
 }
 

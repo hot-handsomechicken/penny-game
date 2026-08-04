@@ -12,6 +12,7 @@ assert.ok(10+2*RESCUE_BUFF_EFFECTS.jumpVelocity<11.5);
 assert.ok(3.45+3*RESCUE_BUFF_EFFECTS.strengthRange<4);
 assert.deepEqual(launchShortcut('?play=rescue-toilet'),{mode:'rescue',stage:10,rescuedIndices:[0,1,2,3,4,5,6,7,8,9]});
 assert.deepEqual(launchShortcut('?play=rescue-stage14'),{mode:'rescue',stage:13,rescuedIndices:[0,1,2,3,4,5,6,7,8,9]});
+assert.deepEqual(launchShortcut('?play=final-boss'),{mode:'escape',stage:19,rescuedIndices:[]});
 assert.equal(launchShortcut('?play=escape'),null);
 assert.deepEqual(hunterSpawnForStage(13),{x:0,z:397});
 assert.deepEqual(hunterSpawnForStage(19,{isMech:true}),{x:0,z:592});
