@@ -77,9 +77,9 @@ for(let k=0;k<4;k++){const o=danger(k%2?-5:5,.55,38+k*5,2.5,1.1,1.5,M.orange);o.
 danger(0,.03,75,14,.15,22,M.toxic);pipe(-6.7,2.6,75,24,'z',M.rust);pipe(6.7,1.3,75,24,'z',M.metal);
 const sewerRoute=[[-1.5,-9],[0,-5.2],[1.5,-1.4],[0,2.4],[-1.5,6.2],[0,9.5]];sewerRoute.forEach(([x,d],k)=>box(x,.32,75+d,3.2,.65,2.9,k%2?M.crate:M.metal,true));
 
-// 锅炉房：锅炉和旋转蒸汽管
+// 锅炉房：前段教学用的低速短旋臂，两侧保留清晰安全区
 for(let z of [95,108])for(let x of [-5.8,5.8]){box(x,1.6,z,2.1,3.2,3.2,M.rust);pipe(x,3.4,z,2.5,'y',M.rust)}
-for(let k=0;k<3;k++){const pivot=new THREE.Group();pivot.position.set(0,.55,96+k*7);world.add(pivot);const arm=box(0,0,0,12,.32,.4,M.hazard,false,true,pivot);hazards.push(arm);pivot.userData={rotate:true,speed:1.15+k*.28};movers.push(pivot)}
+for(let k=0;k<2;k++){const pivot=new THREE.Group();pivot.position.set(0,.55,99+k*11);world.add(pivot);const arm=box(0,0,0,8.5,.32,.4,M.hazard,false,true,pivot);hazards.push(arm);pivot.userData={rotate:true,speed:.68+k*.14};movers.push(pivot)}
 
 // 安检走廊：交错的钢闸
 for(let k=0;k<5;k++){const z=126+k*5,gap=k%2?-4.6:4.6;box(0,4.3,z,14,.5,.65,M.metal);for(let x=-5.5;x<=5.5;x+=1.55)if(Math.abs(x-gap)>1.2)danger(x,1.85,z,.52,3.7,.52,M.red)}
