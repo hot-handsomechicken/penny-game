@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
@@ -24,7 +24,12 @@ assert.equal(TOILET_LAYOUT.filter(value=>value==='corpse').length,2);
 assert.equal(TOILET_LAYOUT.filter(value=>value==='medong').length,1);
 assert.equal(isToiletNoCombat('escape',11),true);
 assert.equal(isToiletNoCombat('escape',10),false);
-assert.equal(isToiletNoCombat('rescue',11),false);
+assert.equal(isToiletNoCombat('rescue',11),true);
+assert.equal(isToiletNoCombat('rescue',12),false);
+assert.equal(RESCUE_TRAIL_OFFSETS.length,RESCUE_PLAYERS.length);
+assert.equal(RESCUE_BATTLE_OFFSETS.length,RESCUE_PLAYERS.length);
+assert.equal(new Set(RESCUE_TRAIL_OFFSETS.map(offset=>offset.join(','))).size,RESCUE_PLAYERS.length);
+assert.ok(RESCUE_BATTLE_OFFSETS.every(([x,z])=>Math.hypot(x,z)<3),'战斗队形必须全部收拢在玩家身边');
 assert.equal(RESCUE_PLACEMENTS.length,RESCUE_PLAYERS.length);
 for(const [stage,placement] of RESCUE_PLACEMENTS.entries()){
   const minZ=stage*30+3,maxZ=(stage+1)*30-3;
@@ -54,5 +59,6 @@ console.log('PASS  默认、领取与通关奖励皮肤解锁规则正确');
 console.log('PASS  十位球星均配有国家队、球衣主辅色、短裤和号码');
 console.log('PASS  十位球星拥有十种独立小像素发型，并统一使用豆豆眼微笑脸');
 console.log('PASS  B罗、德克米细刘海与黄金小兔兔短妹妹头映射已锁定');
+console.log('PASS  获救球员平时松散跟随，战斗时全部收拢在玩家身边');
 console.log('PASS  厕所正确出口永久固定为从左往右第二个隔间');
-console.log('PASS  只有普通模式第 12 关禁用梅东战斗与血条');
+console.log('PASS  普通与拯救模式第 12 关均禁用梅东战斗与血条');

@@ -34,7 +34,17 @@ export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false}={}){
 }
 
 export const TOILET_LAYOUT=Object.freeze(['corpse','tunnel','medong','corpse']);
-export function isToiletNoCombat(mode,stage){return mode==='escape'&&stage===11}
+export function isToiletNoCombat(mode,stage){return (mode==='escape'||mode==='rescue')&&stage===11}
+
+// 队友平时使用不规则松散队形；战斗时收拢在玩家两侧，不排成整齐纵队。
+export const RESCUE_TRAIL_OFFSETS=Object.freeze([
+  [-1.45,-1.3],[1.05,-2.15],[-.25,-3.05],[2.2,-3.55],[-2.4,-4.05],
+  [.75,-4.8],[-1.15,-5.55],[2.45,-5.95],[-2.65,-6.55],[.15,-7.05],
+]);
+export const RESCUE_BATTLE_OFFSETS=Object.freeze([
+  [-1.2,-.15],[1.35,.1],[-2.05,.55],[2.15,-.5],[-1.65,-1.25],
+  [1.8,-1.45],[-2.65,-.65],[2.7,.7],[-.65,-2.05],[.8,-1.95],
+]);
 
 // 每组钥匙与笼子都落在对应关卡的安全落脚区域，避免隔墙拾取或必须踩机关才能营救。
 export const RESCUE_PLACEMENTS=[
