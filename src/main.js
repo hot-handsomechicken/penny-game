@@ -246,10 +246,20 @@ function nationalKit(player){let kit=nationalKits.get(player.name);if(kit)return
 const starMaterials=new Map();
 function starMaterial(player,type){const key=`${player.name}-${type}`;if(starMaterials.has(key))return starMaterials.get(key);const appearance=player.appearance,color=type==='skin'?appearance.skin:type==='accent'?(appearance.hairAccent??appearance.hair):appearance.hair,mat=new THREE.MeshStandardMaterial({color,roughness:type==='skin'?1:.96});starMaterials.set(key,mat);return mat}
 function canvasPolygon(q,points){q.beginPath();q.moveTo(...points[0]);for(const point of points.slice(1))q.lineTo(...point);q.closePath();q.fill()}
+// 从用户提供的 B罗 发型图直接二值化、缩放到 64×64 后得到的刘海行跨度。
+// 发际线由立体模型负责；这里只绘制从第 15 行垂到眼睛附近的独立发束。
+const BRO_FRINGE_ROWS=[
+  [15,[[0,6],[17,46],[55,63]]],[16,[[0,6],[24,37],[45,48],[56,63]]],[17,[[0,6],[23,27],[34,37],[46,48],[56,63]]],
+  [18,[[0,5],[22,26],[35,38],[47,49],[56,63]]],[19,[[0,5],[22,25],[35,38],[48,49],[57,63]]],[20,[[0,5],[22,25],[36,39],[48,50],[57,63]]],
+  [21,[[0,5],[21,24],[36,39],[48,50],[58,63]]],[22,[[0,4],[21,24],[37,40],[49,50],[58,63]]],[23,[[0,4],[21,23],[37,40],[49,49],[58,63]]],
+  [24,[[0,4],[21,23],[37,40],[49,49],[58,63]]],[25,[[0,5],[21,23],[37,40],[48,49],[58,63]]],[26,[[0,5],[21,23],[37,40],[48,48],[58,63]]],
+  [27,[[0,5],[21,23],[38,40],[48,48],[58,63]]],[28,[[0,6],[22,23],[38,40],[47,47],[57,63]]],[29,[[0,2],[4,6],[22,23],[38,40],[56,58],[61,63]]],
+  [30,[[0,2],[5,7],[23,24],[37,40],[56,56],[61,63]]],[31,[[0,2],[6,8],[23,24],[37,39],[62,63]]],[32,[[0,1],[9,9],[24,25],[37,39],[62,63]]],
+  [33,[[37,39]]],[34,[[36,38]]],[35,[[36,37]]],[36,[[36,37]]],[37,[[35,36]]],[38,[[34,35]]],[39,[[33,34]]],[40,[[31,32]]],
+];
 function paintFineFringe(q,player){q.fillStyle=colorCss(player.appearance.hair);
   if(player.name==='B罗'){
-    // 仅把参考图中最细的三根碎刘海放进脸部贴图，并紧贴立体发际线。
-    for(const [x,y] of [[10,11],[11,13],[11,15],[10,17],[9,19],[31,11],[31,13],[30,15],[29,17],[28,19],[27,21],[46,11],[45,13],[45,15],[44,17],[43,19]])q.fillRect(x,y,2,2);
+    for(const [y,spans] of BRO_FRINGE_ROWS)for(const [x0,x1] of spans)q.fillRect(x0,y,x1-x0+1,1);
   }else if(player.name==='德克米'){
     canvasPolygon(q,[[25,9],[31,10],[31,18],[29,25],[26,21]]);canvasPolygon(q,[[34,9],[40,10],[39,18],[36,25],[34,20]]);
   }
@@ -262,7 +272,7 @@ function starFaceMaterial(player){const key=`${player.name}-${STAR_FACE_STYLE}`;
   const texture=new THREE.CanvasTexture(c);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestMipmapLinearFilter;texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,roughness:1});starMaterials.set(key,mat);return mat
 }
 const HAIR_FRONT_PROFILES={
-  'swept-forelock':[{depth:.085,points:[[-.54,.54],[.54,.54],[.54,.2],[.49,.15],[.39,.18],[.27,.14],[.14,.18],[.02,.13],[-.11,.18],[-.25,.13],[-.39,.17],[-.5,.14],[-.54,.2]]}],
+  'swept-forelock':[{depth:.085,points:[[-.54,.54],[.54,.54],[.54,.29],[.49,.27],[.39,.3],[.27,.27],[.14,.3],[.02,.27],[-.11,.3],[-.25,.27],[-.39,.3],[-.5,.27],[-.54,.29]]}],
   'spiky-highlight-crop':[{points:[[-.55,.08],[-.62,.22],[-.5,.29],[-.47,.51],[-.34,.74],[-.21,.49],[-.04,.75],[.09,.49],[.25,.78],[.36,.5],[.47,.68],[.5,.31],[.62,.24],[.54,.08]]}],
   'dark-golden-pageboy':[
     {points:[[-.56,.7],[-.02,.7],[-.01,.42],[-.12,.3],[-.28,.12],[-.48,-.38],[-.56,-.28]]},
