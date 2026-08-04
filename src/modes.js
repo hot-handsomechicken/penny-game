@@ -5,23 +5,23 @@ export const MODE_CONFIG={
 };
 
 export const RESCUE_PLAYERS=[
-  {name:'B罗',color:0xd8d8d0},
-  {name:'小狐狸',color:0xe45e3b},
-  {name:'外马尔',color:0xe4c43b},
-  {name:'黄金小兔兔',color:0xd7aa45},
-  {name:'姆久佩',color:0x4866b3},
-  {name:'朱古力',color:0x6f422b},
-  {name:'哈哈哈',color:0x7ccbe8},
-  {name:'小孩哥',color:0x8d4ab7},
-  {name:'小美叔叔',color:0xe2e2de},
-  {name:'德克米',color:0xb93338},
+  {name:'B罗',country:'葡萄牙',team:'portugal',number:7,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f},
+  {name:'小狐狸',country:'葡萄牙',team:'portugal',number:11,color:0xb51f2e,accent:0x17633f,shortsColor:0x17633f},
+  {name:'外马尔',country:'巴西',team:'brazil',number:10,color:0xf2d52b,accent:0x158447,shortsColor:0x2455a4},
+  {name:'黄金小兔兔',country:'克罗地亚',team:'croatia',number:10,color:0xf2f2ed,accent:0xd6293b,shortsColor:0x173f77},
+  {name:'姆久佩',country:'法国',team:'france',number:10,color:0x173d78,accent:0xd5263a,shortsColor:0x132c57},
+  {name:'朱古力',country:'英格兰',team:'england',number:10,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50},
+  {name:'哈哈哈',country:'挪威',team:'norway',number:9,color:0xd72837,accent:0x142b54,shortsColor:0x142b54},
+  {name:'小孩哥',country:'西班牙',team:'spain',number:19,color:0xb51f2e,accent:0xf0c529,shortsColor:0x263b70},
+  {name:'小美叔叔',country:'英格兰',team:'england',number:9,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50},
+  {name:'德克米',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50},
 ];
 
 export const SKIN_CATALOG=[
   {id:'prisoner',name:'默认囚犯',color:0xd9771f,kind:'default'},
   {id:'ponytail',name:'马尾女孩',color:0xe68b2c,kind:'default'},
   {id:'medong',name:'梅东',color:0x74c8ee,kind:'medong'},
-  ...RESCUE_PLAYERS.map((player,index)=>({id:`rescue-${index}`,name:player.name,color:player.color,kind:'rescue'})),
+  ...RESCUE_PLAYERS.map((player,index)=>({id:`rescue-${index}`,name:player.name,country:player.country,color:player.color,accent:player.accent,kind:'rescue'})),
 ];
 export const RESCUE_REWARD_SKIN_IDS=RESCUE_PLAYERS.map((_,index)=>`rescue-${index}`);
 export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false}={}){
@@ -31,11 +31,7 @@ export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false}={}){
   return unlocked;
 }
 
-export function createToiletLayout(rng=Math.random){
-  const layout=['tunnel','corpse','corpse','medong'];
-  for(let i=layout.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[layout[i],layout[j]]=[layout[j],layout[i]]}
-  return layout;
-}
+export const TOILET_LAYOUT=Object.freeze(['corpse','tunnel','medong','corpse']);
 export function isToiletNoCombat(mode,stage){return mode==='escape'&&stage===11}
 
 // 每组钥匙与笼子都落在对应关卡的安全落脚区域，避免隔墙拾取或必须踩机关才能营救。

@@ -1,21 +1,20 @@
 import assert from 'node:assert/strict';
-import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,createMathQuestion,createToiletLayout,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MODE_CONFIG,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,SKIN_CATALOG,TOILET_LAYOUT,createMathQuestion,isMathAnswerCorrect,isToiletNoCombat,requiredRescueForCheckpoint,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_PLAYERS.length,10);
+for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor))}
+const bro=RESCUE_PLAYERS.find(player=>player.name==='B罗');assert.equal(bro.country,'葡萄牙');assert.equal(bro.team,'portugal');assert.equal(bro.number,7);assert.notEqual(bro.color,bro.accent);
+assert.deepEqual([...new Set(RESCUE_PLAYERS.map(player=>player.country))].sort(),['克罗地亚','巴西','挪威','法国','英格兰','葡萄牙','西班牙'].sort());
 assert.equal(SKIN_CATALOG.length,13);
 assert.deepEqual(unlockedSkinIds(),['prisoner','ponytail']);
 assert.deepEqual(unlockedSkinIds({claimedMedong:true}),['prisoner','ponytail','medong']);
 assert.equal(RESCUE_REWARD_SKIN_IDS.length,10);
 assert.equal(unlockedSkinIds({claimedMedong:true,rescueCompleted:true}).length,13);
-const toiletA=createToiletLayout(()=>.12),toiletB=createToiletLayout(()=>.81);
-for(const layout of [toiletA,toiletB]){
-  assert.equal(layout.length,4);
-  assert.equal(layout.filter(value=>value==='tunnel').length,1);
-  assert.equal(layout.filter(value=>value==='corpse').length,2);
-  assert.equal(layout.filter(value=>value==='medong').length,1);
-}
-assert.notDeepEqual(toiletA,toiletB);
+assert.deepEqual([...TOILET_LAYOUT],['corpse','tunnel','medong','corpse']);
+assert.equal(TOILET_LAYOUT.filter(value=>value==='tunnel').length,1);
+assert.equal(TOILET_LAYOUT.filter(value=>value==='corpse').length,2);
+assert.equal(TOILET_LAYOUT.filter(value=>value==='medong').length,1);
 assert.equal(isToiletNoCombat('escape',11),true);
 assert.equal(isToiletNoCombat('escape',10),false);
 assert.equal(isToiletNoCombat('rescue',11),false);
@@ -45,5 +44,6 @@ console.log('PASS  十名球员按检查点顺序形成营救门槛');
 console.log('PASS  十组钥匙和笼子均位于对应关卡安全范围');
 console.log('PASS  拯救模式梅东血量逐关大幅增加');
 console.log('PASS  默认、领取与通关奖励皮肤解锁规则正确');
-console.log('PASS  厕所四个隔间每局随机且保持一条生路、三条错误路线');
+console.log('PASS  十位球星均配有国家队、球衣主辅色、短裤和号码');
+console.log('PASS  厕所正确出口永久固定为从左往右第二个隔间');
 console.log('PASS  只有普通模式第 12 关禁用梅东战斗与血条');
