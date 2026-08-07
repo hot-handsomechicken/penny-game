@@ -5,7 +5,7 @@ import './responsive.css';
 import './settings.css';
 import './modes.css';
 import {AudioSystem} from './audio.js';
-import {MEDONG_APPEARANCE,MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
+import {MEDONG_APPEARANCE,MEDONG_PRAISE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_FINAL_BOSS_STAGE,RESCUE_PLACEMENTS,RESCUE_PLATFORM_ROUTES,RESCUE_PLAYERS,RESCUE_STAGE_SCENES,RESCUE_TRAIL_OFFSETS,RESCUE_UNIQUE_STAGE_INDICES,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from './modes.js';
 import {
   HERO_HEIGHT,
   HERO_RADIUS,
@@ -67,7 +67,7 @@ function sector(i,floor=M.floor,walls=M.brick,open=false){const z=i*STAGE_LENGTH
 const stageNames=['牢房区 · 01','洗衣封锁区 · 02','地下排污渠 · 03','锅炉房 · 04','安检走廊 · 05','监狱厨房 · 06','通风管道 · 07','放风操场 · 08','警戒屋顶 · 09','假撤离点 · 10','监狱厕所入口 · 11','四选一隔间 · 12','厕所下水道 · 13','维修竖井 · 14','守卫营房 · 15','押运车库 · 16','外圈排水渠 · 17','探照灯广场 · 18','外墙脚手架 · 19','最终停机坪 · 20'];
 const missions=['翻过牢房警戒线','避开横冲直撞的洗衣车','踩着浮箱越过污水渠','躲开旋转的高温管道','穿过交错的安检闸门','跳过灼热炉台','沿维修踏板爬出风管','穿过带刺封锁区','避开屋顶排风扇','突破假撤离点的封锁','进入监狱厕所','正确位置固定，靠近四扇相同的门选择','沿厕所地洞爬过下水道','沿维修平台穿过竖井','跳过营房警戒线','避开移动的押运车辆','踩着旧箱越过外圈污水','穿过交错的探照光束','沿脚手架登上外墙','击败梅东，抵达直升机'];
 const mathStageNames=Array.from({length:MODE_CONFIG.math.stageCount},(_,i)=>`数学教室 · ${String(i+1).padStart(2,'0')}`),mathMissions=mathStageNames.map((_,i)=>`答对梅东老师的第 ${i+1} 道题`);
-const rescueStageNames=Array.from({length:MODE_CONFIG.rescue.stageCount},(_,i)=>i<RESCUE_PLAYERS.length?`营救 ${RESCUE_PLAYERS[i].name} · ${String(i+1).padStart(2,'0')}`:i<=12?stageNames[i]:`全员突围 · ${String(i+1).padStart(2,'0')}`),rescueMissions=rescueStageNames.map((_,i)=>i<RESCUE_PLAYERS.length?`寻找钥匙并营救 ${RESCUE_PLAYERS[i].name}`:i<=12?missions[i]:'护送获救球员继续突围');
+const rescueStageNames=RESCUE_STAGE_SCENES.map((scene,i)=>`${scene.name} · ${String(i+1).padStart(2,'0')}`),rescueMissions=RESCUE_STAGE_SCENES.map((scene,i)=>i<RESCUE_PLAYERS.length?`${scene.mission}，营救 ${RESCUE_PLAYERS[i].name}`:scene.mission);
 const modeStageNames={escape:stageNames,math:mathStageNames,rescue:rescueStageNames},modeMissions={escape:missions,math:mathMissions,rescue:rescueMissions};
 [M.floor,M.floorDark,M.floorDark,M.floorDark,M.floor,M.floor,M.metal,M.floorDark,M.black,M.black,M.floorDark,M.crate,M.ice,M.metal,M.floor,M.black,M.floorDark,M.floorDark,M.metal,M.black].forEach((f,i)=>sector(i,f,i>6?M.brickDark:M.brick,i>=7));
 
@@ -163,6 +163,85 @@ box(0,-.25,600.8,15,.5,4,M.black,true);box(0,.03,600.8,12,.08,3.5,M.hazard);
 const heli=new THREE.Group();heli.position.set(0,3.3,602);world.add(heli);box(0,0,0,5,2.2,3,M.black,false,true,heli);box(0,.8,-2.4,1.1,1,3.2,M.black,false,true,heli);box(0,1.5,0,10,.15,.28,M.bar,false,true,heli);box(0,.2,2.1,2.7,1.5,1.5,M.black,false,true,heli);textSprite('FINAL EVAC  →',0,5.1,597,.78,'#bfff4f');
 
 for(const object of [...solids,...hazards])object.userData.modes=['escape','rescue'];
+
+// 拯救模式拥有独立路线。仅厕所三关和最终战继续复用普通模式区域。
+const rescueUniqueStageSet=new Set(RESCUE_UNIQUE_STAGE_INDICES),rescueOriginalRoots=[],rescueWorldPosition=new THREE.Vector3();
+scene.updateMatrixWorld(true);
+for(const child of [...world.children]){
+  child.getWorldPosition(rescueWorldPosition);const stage=Math.floor(rescueWorldPosition.z/STAGE_LENGTH);
+  if(rescueUniqueStageSet.has(stage))rescueOriginalRoots.push(child);
+}
+for(const object of [...solids,...hazards]){
+  object.getWorldPosition(rescueWorldPosition);const stage=Math.floor(rescueWorldPosition.z/STAGE_LENGTH);
+  if(rescueUniqueStageSet.has(stage))object.userData.modes=['escape'];
+}
+
+const rescueWorld=new THREE.Group();scene.add(rescueWorld);rescueWorld.visible=false;
+const rescueFloor=material('tile','#253c4a','#3d6478'),rescueWall=material('brick','#314b5d','#1a2d3a'),rescueBlue=material('metal','#28627a','#7bd1eb',0x103f52),rescuePurple=material('metal','#59476e','#b083d0',0x321d45),rescueAlarm=material('stripe','#4a2638','#ef6384',0x5c152b),rescueSludge=material('tile','#26464b','#5bb6bd',0x0d3f45),rescueIvory=material('tile','#aeb9b5','#687976');
+function rescueBox(x,y,z,w,h,d,m=rescueWall,solid=false,shadow=true,parent=rescueWorld){const object=box(x,y,z,w,h,d,m,solid,shadow,parent);object.userData.modes=['rescue'];return object}
+function rescueDanger(x,y,z,w,h,d,m=rescueAlarm,parent=rescueWorld){const object=rescueBox(x,y,z,w,h,d,m,false,true,parent);hazards.push(object);return object}
+function rescuePipe(x,y,z,len,axis='z',m=rescueBlue,parent=rescueWorld){const dims=axis==='z'?[.34,.34,len]:axis==='x'?[len,.34,.34]:[.34,len,.34];rescueBox(x,y,z,...dims,m,false,true,parent);for(let k=-1;k<=1;k+=2){const p=axis==='z'?[x,y,z+k*len/2]:axis==='x'?[x+k*len/2,y,z]:[x,y+k*len/2,z];rescueBox(...p,.52,.52,.28,m,false,true,parent)}}
+function rescueSector(stage,{open=false,floor=rescueFloor,walls=rescueWall}={}){const z=stage*STAGE_LENGTH+STAGE_LENGTH/2;rescueBox(0,-.35,z,15,.7,STAGE_LENGTH,floor,true);if(open){rescueBox(-7.5,1,z,.5,2,STAGE_LENGTH,walls,true);rescueBox(7.5,1,z,.5,2,STAGE_LENGTH,walls,true)}else{rescueBox(-7.5,4.8,z,.6,9.6,STAGE_LENGTH,walls,true);rescueBox(7.5,4.8,z,.6,9.6,STAGE_LENGTH,walls,true);rescueBox(0,ENCLOSED_CEILING_Y,z,15,.4,STAGE_LENGTH,M.black,true)}for(let offset=-12;offset<=12;offset+=6)rescueBox(0,CEILING_BEAM_Y,z+offset,15,.28,.28,rescueBlue)}
+function rescueLabel(stage,text,color='#94e7ff'){textSprite(text,0,5.9,stage*STAGE_LENGTH+5,.58,color,rescueWorld)}
+for(const stage of RESCUE_UNIQUE_STAGE_INDICES)rescueSector(stage,{open:[1,5,8,13].includes(stage),floor:[5,8].includes(stage)?M.black:rescueFloor,walls:stage===3?rescueIvory:rescueWall});
+
+// 01 地下接应暗道：无伤害的掩体教学，交错缺口保证钥匙和牢笼都能抵达。
+rescueLabel(0,'UNDERGROUND CONTACT');
+for(const [z,gap] of [[11,-4.6],[16,4.6],[21,-4.6],[26,4.6]]){for(const x of [-4.5,0,4.5])if(Math.abs(x-gap)>1.4)rescueBox(x,1,z,4,2,.75,M.crate,true)}
+for(const [x,z] of [[-5.7,7],[5.7,19],[-5.7,25]])rescueBox(x,.8,z,1.7,1.6,2.2,rescueBlue,true);
+
+// 02 巡逻犬舍外围：犬舍构成侧向掩体，巡逻灯缓慢横移并留出宽阔绕行空间。
+rescueLabel(1,'K9 PATROL YARD','#ffd17d');
+for(const [x,z] of [[-5.4,38],[5.4,42],[-5.4,49],[5.4,54]]){rescueBox(x,1,z,2.8,2,3,M.black,true);rescueBox(x,2.15,z,3.1,.22,3.3,rescueBlue)}
+for(let k=0;k<2;k++){const light=rescueDanger(0,.34,44+k*8,2.2,.18,1.1,rescueAlarm);Object.assign(light.userData,{move:'x',base:0,amp:4.5,speed:.58+k*.08,phase:k*2.2});movers.push(light)}
+
+// 03 高压配电中心：交错电缆只封一侧，玩家始终有清晰的安全通道。
+rescueLabel(2,'HIGH VOLTAGE','#8cecff');
+for(const [x,z] of [[-5.5,68],[5.5,74],[-5.5,82],[5.5,88]]){rescueBox(x,1.45,z,2.2,2.9,2.3,rescuePurple,true);rescuePipe(x,3.25,z,2.2,'y',rescueBlue)}
+for(const [z,x] of [[71,-2.6],[77,2.6],[83,-2.6],[89,2.6]])rescueDanger(x,.08,z,7,.16,.55,rescueBlue);
+for(const [x,z] of [[-1.5,66],[0,84.5]])rescueBox(x,.18,z,3,.36,2.6,rescueIvory,true);
+
+// 04 隔离医务通道：移动病床速度较慢，可从两侧稳定躲避。
+rescueLabel(3,'ISOLATION WARD','#d8fff2');
+for(const z of [98,106,114])for(const x of [-5.8,5.8]){rescueBox(x,.8,z,2.2,1.6,2.7,rescueIvory,true);rescueBox(x,1.75,z,1.6,.2,2.1,rescueBlue)}
+for(let k=0;k<3;k++){const bed=rescueDanger(0,.52,100+k*6.2,2.8,1.04,1.3,k%2?rescuePurple:rescueAlarm);Object.assign(bed.userData,{move:'x',base:0,amp:4.1,speed:.5+k*.05,phase:k*1.7});movers.push(bed)}
+
+// 05 访客登记迷宫：纯路线判断，不使用致命机关。
+rescueLabel(4,'VISITOR CHECK-IN','#ffd993');
+for(const [z,gap] of [[130,-4.4],[136,4.4],[142,-4.4],[148,4.4]]){for(const x of [-4.7,0,4.7])if(Math.abs(x-gap)>1.6)rescueBox(x,1.15,z,4.1,2.3,.55,rescuePurple,true)}
+for(const [x,z] of [[-5.8,126],[5.8,139],[-5.8,146]])rescueBox(x,1.45,z,2,2.9,1.2,M.crate,true);
+
+// 06 货运升降井：平台间距小于基础跳跃能力，钥匙和牢笼均落在宽平台上。
+rescueLabel(5,'FREIGHT LIFT SHAFT','#f3bf68');rescueDanger(0,.03,165,13,.16,21,M.black);
+for(const [x,z] of RESCUE_PLATFORM_ROUTES.freight)rescueBox(x,.36,z,3.4,.72,2.9,M.crate,true);
+for(const x of [-6.2,6.2]){rescuePipe(x,2.2,165,22,'z',M.rust);rescueBox(x,4.2,165,1.4,8.4,5,rescueBlue,true)}
+
+// 07 监控服务器层：低位扫描线与逐级平台组合，终点牢笼有完整承托。
+rescueLabel(6,'SERVER SURVEILLANCE','#bba4ff');
+for(const [x,z] of [[-5.7,187],[5.7,193],[-5.7,201],[5.7,207]]){rescueBox(x,1.8,z,2.2,3.6,2.3,rescuePurple,true);for(const y of [.7,1.5,2.3])rescueBox(x,y,z-1.18,1.4,.12,.12,rescueBlue)}
+for(const [z,x] of [[191,-2.8],[198,2.8]])rescueDanger(x,.45,z,7.2,.15,.36,rescueAlarm);
+rescueBox(-1.35,.2,185,3,.4,2.6,rescueIvory,true);rescueBox(0,.45,201,3.2,.9,2.8,M.crate,true);rescueBox(1.35,.7,205,3.2,1.4,3,rescueIvory,true);
+
+// 08 垃圾压缩站：压缩块横移缓慢，通道两端与侧边始终保留安全区。
+rescueLabel(7,'WASTE COMPACTOR','#ff9b78');
+for(const [x,z] of [[-5.8,219],[5.8,225],[-5.8,232]])rescueBox(x,1.2,z,2.5,2.4,4,M.rust,true);
+for(let k=0;k<3;k++){const press=rescueDanger(0,.72,220+k*7,3,1.44,1.5,k%2?M.rust:rescueAlarm);Object.assign(press.userData,{move:'x',base:0,amp:4.2,speed:.45+k*.05,phase:k*1.9});movers.push(press)}
+
+// 09 排水泵房：浅水区采用连续宽踏板，不要求极限跳跃。
+rescueLabel(8,'DRAINAGE PUMP ROOM','#72e3dd');rescueDanger(0,.03,257,13,.16,22,rescueSludge);
+for(const [x,z] of RESCUE_PLATFORM_ROUTES.pump)rescueBox(x,.34,z,3.3,.68,2.8,rescueBlue,true);
+for(const [x,z] of [[-5.7,250],[5.7,261]]){rescueBox(x,1.7,z,2.4,3.4,3.8,rescuePurple,true);rescuePipe(x,3.65,z,3.2,'y',rescueBlue)}
+
+// 10 伪造证件库：档案柜与安检门交错，但每道门都有两倍身宽的缺口。
+rescueLabel(9,'FORGED ID VAULT','#e6c9ff');
+for(const [x,z] of [[-5.7,278],[5.7,283],[-5.7,290],[5.7,296]])for(const y of [.7,1.7,2.7])rescueBox(x,y,z,2.3,.72,1.4,y===1.7?rescuePurple:M.crate,true);
+for(const [z,gap] of [[282,-4.5],[288,4.5],[294,-4.5]]){rescueBox(0,4.2,z,14,.36,.5,rescueBlue);for(let x=-5.7;x<=5.7;x+=1.4)if(Math.abs(x-gap)>1.45)rescueDanger(x,1.75,z,.28,3.5,.38,rescueAlarm)}
+
+// 14 地下押运月台：与普通模式维修竖井完全不同，移动行李车仍保留宽阔侧路。
+rescueLabel(13,'UNDERGROUND TRANSFER','#ffc66f');
+rescueBox(0,.04,407,2.1,.08,23,rescueBlue);for(const x of [-6.2,6.2])rescueBox(x,.55,405,1.2,1.1,24,M.rust,true);
+for(let k=0;k<3;k++){const cart=rescueDanger(0,.65,401+k*7,3.2,1.3,1.45,k%2?M.black:M.rust);Object.assign(cart.userData,{move:'x',base:0,amp:4.3,speed:.5+k*.06,phase:k*1.6});movers.push(cart)}
+for(const [x,z] of [[-5.3,397],[5.3,405],[-5.3,415]])rescueBox(x,.8,z,2.2,1.6,3,M.crate,true);
 
 // 数学模式：十二间独立教室，每间包含黑板、课桌椅与检查点。
 const mathWorld=new THREE.Group(),mathCheckpoints=[],mathBoardQuestions=[];scene.add(mathWorld);mathWorld.visible=false;
@@ -378,6 +457,7 @@ let hunterSpawnTimer=0;
 const stageEl=document.querySelector('#stage'),bar=document.querySelector('#bar'),missionEl=document.querySelector('#missionText'),toast=document.querySelector('#toast'),timeEl=document.querySelector('#time'),hunterHud=document.querySelector('#hunterHud'),hunterTitle=document.querySelector('#hunterTitle'),hunterMainBar=document.querySelector('#hunterMainBar'),hunterHp=document.querySelector('#hunterHp'),hunterHpText=document.querySelector('#hunterHpText'),hunterIntent=document.querySelector('#hunterIntent'),mechArms=document.querySelector('#mechArms'),leftArmHp=document.querySelector('#leftArmHp'),rightArmHp=document.querySelector('#rightArmHp'),weaponHud=document.querySelector('#weaponHud'),aimReticle=document.querySelector('#aimReticle'),attackButton=document.querySelector('#attack'),attackLabel=document.querySelector('#attackLabel'),rescueHud=document.querySelector('#rescueHud'),rescueBuffsEl=document.querySelector('#rescueBuffs'),mathPanel=document.querySelector('#mathPanel'),mathQuestionEl=document.querySelector('#mathQuestion'),mathAnswer=document.querySelector('#mathAnswer'),pauseMenu=document.querySelector('#pauseMenu'),qualitySelect=document.querySelector('#quality'),fpsReadout=document.querySelector('#fpsReadout'),winTitle=document.querySelector('#winTitle'),winCopy=document.querySelector('#winCopy'),skinsPanel=document.querySelector('#skinsPanel'),skinReward=document.querySelector('#skinReward'),skinGrid=document.querySelector('#skinGrid'),selectedSkinName=document.querySelector('#selectedSkinName'),unlockReward=document.querySelector('#unlockReward'),toiletEvent=document.querySelector('#toiletEvent');
 const QUALITY_KEY='block-break-quality-v1';let qualityMode='auto',autoDegraded=false;try{qualityMode=localStorage.getItem(QUALITY_KEY)||'auto'}catch{}if(!['auto','high','low'].includes(qualityMode))qualityMode='auto';
 function applyQuality(mode=qualityMode,persist=true){qualityMode=mode;activeLowPower=mode==='low'||(mode==='auto'&&(defaultLowPower||autoDegraded));renderer.shadowMap.enabled=!activeLowPower;moon.castShadow=!activeLowPower;renderer.setPixelRatio(Math.min(devicePixelRatio,activeLowPower?1:1.5));renderer.setSize(innerWidth,innerHeight);qualitySelect.value=mode;document.body.dataset.renderQuality=activeLowPower?'low':'high';if(persist)try{localStorage.setItem(QUALITY_KEY,mode)}catch{}}
+function syncRescueWorld(){const active=state.mode==='rescue';rescueWorld.visible=active;for(const object of rescueOriginalRoots)object.visible=!active}
 function syncToiletWorld(){const active=state.mode==='escape'||state.mode==='rescue';escapeToiletWorld.visible=active;for(const object of originalToiletRegion)object.visible=false}
 function clearToiletTimers(){for(const timer of toiletState.timers)clearTimeout(timer);toiletState.timers.length=0}
 function scheduleToilet(callback,delay){const timer=setTimeout(callback,delay);toiletState.timers.push(timer);return timer}
@@ -426,15 +506,16 @@ function fireMoneyGun(){
 }
 function haptic(pattern){if(mobileDevice)navigator.vibrate?.(pattern)}
 function spawnHunter(stage){
-  const isMech=state.mode==='escape'&&stage===LAST_STAGE,encounterIndex=encounterStages.indexOf(stage);hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=state.mode==='rescue'?rescueHunterHp(stage):hunterMaxHpForEncounter(encounterIndex);hunterState.hitFlash=0;hunterState.lastUiMode='';configureHunterForm(isMech);resetHunterBrain(hunterState,isMech?2.4:.8);
+  const isMech=state.mode==='escape'&&stage===LAST_STAGE,isRescueBoss=state.mode==='rescue'&&stage===RESCUE_FINAL_BOSS_STAGE,encounterIndex=encounterStages.indexOf(stage);hunterState.active=true;hunterState.stage=stage;hunterState.hp=hunterState.maxHp=state.mode==='rescue'?rescueHunterHp(stage):hunterMaxHpForEncounter(encounterIndex);hunterState.hitFlash=0;hunterState.lastUiMode='';configureHunterForm(isMech);resetHunterBrain(hunterState,isMech?2.4:.8);
   const spawn=hunterSpawnForStage(stage,{isMech,stageLength:STAGE_LENGTH});hunter.position.set(spawn.x,.02,spawn.z);
   if(isMech){resetMechArms();hunterTitle.textContent='⚠ 梅东机甲 · 双臂弱点';hunterMainBar.classList.add('hidden');mechArms.classList.remove('hidden');attackLabel.textContent=state.moneyGun?'发射 [F]':'获取武器';missionEl.textContent=state.moneyGun?'瞄准并摧毁机甲两条手臂':'前往绿色武器箱取得钞票枪';aimReticle.classList.toggle('hidden',!state.moneyGun);announce('⚠ 梅东机甲启动 · 只有手臂会受伤！')}
-  else{hunterTitle.textContent=state.mode==='rescue'?'⚠ 强化梅东 · 呼叫队友':'⚠ 梅东 · 阿根廷10号';hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');attackLabel.textContent='攻击 [F]';aimReticle.classList.add('hidden');missionEl.textContent=state.mode==='rescue'?'与获救球员一起击退梅东':'击败梅东，解除封锁';updateHunterHud();announce(`⚠ 梅东出现 · 生命 ${hunterState.maxHp}`)}
+  else{hunterTitle.textContent=isRescueBoss?'⚠ 最终 Boss 梅东 · 全员决战':state.mode==='rescue'?'⚠ 强化梅东 · 呼叫队友':'⚠ 梅东 · 阿根廷10号';hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');attackLabel.textContent='攻击 [F]';aimReticle.classList.add('hidden');missionEl.textContent=isRescueBoss?'与十位获救球员围攻最终梅东':state.mode==='rescue'?'与获救球员一起击退梅东':'击败梅东，解除封锁';updateHunterHud();announce(isRescueBoss?`⚠ 最终围捕开始 · 梅东生命 ${hunterState.maxHp}`:`⚠ 梅东出现 · 生命 ${hunterState.maxHp}`)}
   hunter.visible=true;hunterWarning.visible=false;lockGate(stage,true);hunterHud.classList.remove('hidden');attackButton.classList.remove('hidden');updateHunterIntent(true);haptic([40,35,40])
 }
-function defeatHunter(){const wasMech=hunterState.isMech;hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;setHunterBodyGlow(0x000000);lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');aimReticle.classList.add('hidden');weaponHud.classList.add('hidden');moneyGunModel.visible=false;missionEl.textContent=wasMech?'机甲摧毁 · 登上直升机撤离':state.mode==='rescue'?activeMissions()[state.stage]:'封锁解除 · 前往下一个检查点';announce(wasMech?'✓ 两条机械臂已摧毁 · 梅东机甲失效':state.mode==='rescue'?'✓ 队友合力击退梅东':'✓ 梅东已被击退 · 封锁解除');beep(wasMech?1080:920,wasMech?.42:.28);haptic([30,40,70])}
+function defeatHunter(){const wasMech=hunterState.isMech,wasRescueBoss=state.mode==='rescue'&&hunterState.stage===RESCUE_FINAL_BOSS_STAGE;hunterState.active=false;hunterState.mode='idle';hunter.visible=false;hunterWarning.visible=false;setHunterBodyGlow(0x000000);lockGate(hunterState.stage,false);hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');attackButton.classList.add('hidden');aimReticle.classList.add('hidden');weaponHud.classList.add('hidden');moneyGunModel.visible=false;missionEl.textContent=wasMech?'机甲摧毁 · 登上直升机撤离':wasRescueBoss?'最终梅东已被击败 · 穿过终点撤离':state.mode==='rescue'?activeMissions()[state.stage]:'封锁解除 · 前往下一个检查点';announce(wasMech?'✓ 两条机械臂已摧毁 · 梅东机甲失效':wasRescueBoss?'✓ 十位队友合力击败最终梅东':state.mode==='rescue'?'✓ 队友合力击退梅东':'✓ 梅东已被击退 · 封锁解除');beep(wasMech?1080:920,wasMech?.42:.28);haptic([30,40,70])}
 function hunterBlocked(position){
   for(const solid of solids){
+    if(!objectEnabledForMode(solid))continue;
     if(Math.abs(solid.userData.stageIndex-hunterState.stage)>1)continue;
     const bounds=objectBounds(solid);
     if(overlapsHorizontal(position,bounds,hunterState.isMech?1.35:.58)&&overlapsVertical(position,bounds,hunterState.isMech?4.35:2.85))return true;
@@ -474,7 +555,7 @@ function reset(full=false){
   if(full){
     if(hunterSpawnTimer){clearTimeout(hunterSpawnTimer);hunterSpawnTimer=0}
     state.stage=0;state.start=performance.now();state.checkpoint.set(0,.02,2);state.won=false;state.paused=false;state.invulnerable=0;state.moneyGun=false;state.mathQuestion=null;state.keys={};touchX=touchY=0;jumpTap=false;pauseMenu.classList.add('hidden');state.yaw=0;state.pitch=.48;state.cameraDistance=8;applyHeroSkin();
-    world.visible=state.mode!=='math';mathWorld.visible=state.mode==='math';rescueContent.visible=state.mode==='rescue';syncToiletWorld();mathPanel.classList.toggle('hidden',state.mode!=='math');rescueHud.classList.toggle('hidden',state.mode!=='rescue');document.body.dataset.mode=state.mode;
+    world.visible=state.mode!=='math';mathWorld.visible=state.mode==='math';rescueContent.visible=state.mode==='rescue';syncRescueWorld();syncToiletWorld();mathPanel.classList.toggle('hidden',state.mode!=='math');rescueHud.classList.toggle('hidden',state.mode!=='rescue');document.body.dataset.mode=state.mode;
     if(state.mode==='rescue'){rescueState.keys.clear();rescueState.rescued.clear();rescueState.reminderCooldown=0;rescueState.allyCooldown=0}for(const follower of rescueFollowers)follower.visible=false;syncRescueObjects();
     hunterState.active=false;hunterState.mode='idle';configureHunterForm(false);hunter.visible=false;hunterWarning.visible=false;hunterHud.classList.add('hidden');hunterHud.classList.remove('danger','hit');hunterMainBar.classList.remove('hidden');mechArms.classList.add('hidden');weaponHud.classList.add('hidden');aimReticle.classList.add('hidden');attackButton.classList.add('hidden');attackLabel.textContent='攻击 [F]';moneyGunModel.visible=false;moneyGunPickup.visible=true;for(const shot of moneyBullets)scene.remove(shot);moneyBullets.length=0;lockGates.forEach((_,s)=>lockGate(s,true));document.querySelector('#win').classList.add('hidden');stageEl.textContent=activeNames()[0];bar.style.width=`${100/activeStageCount()}%`;missionEl.textContent=activeMissions()[0];activeCheckpoints().forEach((c,i)=>setCheckpoint(c,i===0));if(state.mode==='math')startMathStage(0)
   }else if(state.mode==='math'){
@@ -487,7 +568,7 @@ function reset(full=false){
 function setCheckpoint(c,on){for(const k of ['pad','rim','beacon','flag'])c.userData[k].material=on?M.green:M.greenOff}
 function beep(freq=440,duration=.09){audio.tone(freq,duration)}
 function announce(s){toast.textContent=s;toast.classList.add('show');clearTimeout(announce.t);announce.t=setTimeout(()=>toast.classList.remove('show'),1200)}
-function updateStage(i){if(state.mode==='math'||i<=state.stage)return;if(state.mode==='rescue'){const required=requiredRescueForCheckpoint(i);if(required!==null&&!rescueState.rescued.has(required)){hero.position.z=i*STAGE_LENGTH-.85;state.velocity.z=Math.min(0,state.velocity.z);if(rescueState.reminderCooldown<=0){announce(`你需要找到钥匙营救 ${RESCUE_PLAYERS[required].name} 球员！`);rescueState.reminderCooldown=1.4}return}}state.stage=i;state.checkpoint.set(0,.02,i*STAGE_LENGTH+2);stageEl.textContent=activeNames()[i];bar.style.width=`${(i+1)/activeStageCount()*100}%`;missionEl.textContent=activeMissions()[i];activeCheckpoints().forEach((c,k)=>setCheckpoint(c,k<=i));const toiletEntrance=(state.mode==='escape'||state.mode==='rescue')&&i===10,toiletNoCombat=isToiletNoCombat(state.mode,i);announce(toiletEntrance?'🚻 假撤离点后方竟然是监狱厕所':toiletNoCombat?'提示：正确隔间的位置每局都固定':i===activeLastStage()?`⚑ 最终检查点 · ${state.mode==='rescue'?'带领全员撤离':'准备撤离'}`:`⚑ 检查点 ${i+1} / ${activeStageCount()} 已激活`);beep(toiletEntrance?330:740,.15);haptic(toiletEntrance?[45,35,70]:45);if(state.mode==='rescue')updateRescueHud();if(toiletNoCombat)lockGate(i,false);if(encounterStages.includes(i)&&!toiletNoCombat){if(hunterSpawnTimer)clearTimeout(hunterSpawnTimer);hunterSpawnTimer=setTimeout(()=>{hunterSpawnTimer=0;if(state.started&&!state.won&&state.stage===i)spawnHunter(i)},350)}}
+function updateStage(i){if(state.mode==='math'||i<=state.stage)return;if(state.mode==='rescue'){const required=requiredRescueForCheckpoint(i);if(required!==null&&!rescueState.rescued.has(required)){hero.position.z=i*STAGE_LENGTH-.85;state.velocity.z=Math.min(0,state.velocity.z);if(rescueState.reminderCooldown<=0){announce(`你需要找到钥匙营救 ${RESCUE_PLAYERS[required].name} 球员！`);rescueState.reminderCooldown=1.4}return}}state.stage=i;state.checkpoint.set(0,.02,i*STAGE_LENGTH+2);stageEl.textContent=activeNames()[i];bar.style.width=`${(i+1)/activeStageCount()*100}%`;missionEl.textContent=activeMissions()[i];activeCheckpoints().forEach((c,k)=>setCheckpoint(c,k<=i));const toiletEntrance=(state.mode==='escape'||state.mode==='rescue')&&i===10,toiletNoCombat=isToiletNoCombat(state.mode,i),rescueFinalBoss=state.mode==='rescue'&&i===RESCUE_FINAL_BOSS_STAGE;announce(toiletEntrance?'🚻 地下证件库后方竟然是监狱厕所':toiletNoCombat?'提示：正确隔间的位置每局都固定':rescueFinalBoss?'⚑ 最终检查点 · 十位球员准备围攻梅东':i===activeLastStage()?`⚑ 最终检查点 · ${state.mode==='rescue'?'带领全员撤离':'准备撤离'}`:`⚑ 检查点 ${i+1} / ${activeStageCount()} 已激活`);beep(toiletEntrance?330:740,.15);haptic(toiletEntrance?[45,35,70]:45);if(state.mode==='rescue')updateRescueHud();if(toiletNoCombat)lockGate(i,false);if((encounterStages.includes(i)||rescueFinalBoss)&&!toiletNoCombat){if(hunterSpawnTimer)clearTimeout(hunterSpawnTimer);hunterSpawnTimer=setTimeout(()=>{hunterSpawnTimer=0;if(state.started&&!state.won&&state.stage===i)spawnHunter(i)},350)}}
 function hit(obj,pad=.5){return intersectsBody(hero.position,objectBounds(obj),pad)}
 function hitHazard(obj,pad=.28){const dimensions=obj.geometry?.parameters;if(obj.parent?.userData.rotate&&dimensions?.width){obj.getWorldPosition(hazardCenter);obj.getWorldQuaternion(hazardQuaternion);hazardEuler.setFromQuaternion(hazardQuaternion,'YXZ');return intersectsYawedBox(hero.position,hazardCenter,hazardEuler.y,dimensions.width,dimensions.height,dimensions.depth,pad)}return hit(obj,pad)}
 function die(reason='被抓住了'){if(state.invulnerable>0)return;announce(`✖ ${reason} · 返回检查点`);beep(120,.24);haptic([90,50,90]);reset();state.invulnerable=1.15}

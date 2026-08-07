@@ -20,6 +20,31 @@ export const RESCUE_PLAYERS=[
   {name:'德克米',buff:'jump',country:'英格兰',team:'england',number:4,color:0xf1f2ee,accent:0x1b2d50,shortsColor:0x1b2d50,appearance:{skin:0xd7a37e,hair:0x100d0b,style:'messy-short-crop',faceWidth:.74,faceHeight:.74}},
 ];
 
+export const RESCUE_STAGE_SCENES=Object.freeze([
+  {name:'地下接应暗道',mission:'绕过掩体找到钥匙',kind:'cover-maze'},
+  {name:'巡逻犬舍外围',mission:'利用犬舍间隙避开巡逻灯',kind:'patrol-yard'},
+  {name:'高压配电中心',mission:'沿绝缘平台穿过电缆区',kind:'power-grid'},
+  {name:'隔离医务通道',mission:'避开移动病床完成营救',kind:'medical-run'},
+  {name:'访客登记迷宫',mission:'穿过交错隔墙寻找牢笼',kind:'visitor-maze'},
+  {name:'货运升降井',mission:'踩稳货台越过深坑',kind:'freight-lift'},
+  {name:'监控服务器层',mission:'避开扫描激光爬上平台',kind:'server-floor'},
+  {name:'垃圾压缩站',mission:'观察压缩机节奏穿过通道',kind:'compactor'},
+  {name:'排水泵房',mission:'沿泵房踏板跨过积水',kind:'pump-room'},
+  {name:'伪造证件库',mission:'绕过档案柜和安检门',kind:'identity-vault'},
+  {name:'监狱厕所入口',mission:'进入监狱厕所',kind:'shared-toilet'},
+  {name:'四选一隔间',mission:'找到固定的正确隔间',kind:'shared-toilet'},
+  {name:'厕所下水道',mission:'沿厕所地洞爬过下水道',kind:'shared-toilet'},
+  {name:'地下押运月台',mission:'避开横移行李车抵达出口',kind:'transfer-platform'},
+  {name:'梅东最终围捕',mission:'与全体获救球员击败最终梅东',kind:'shared-final-boss'},
+]);
+export const RESCUE_SHARED_STAGE_INDICES=Object.freeze([10,11,12,14]);
+export const RESCUE_UNIQUE_STAGE_INDICES=Object.freeze([0,1,2,3,4,5,6,7,8,9,13]);
+export const RESCUE_FINAL_BOSS_STAGE=14;
+export const RESCUE_PLATFORM_ROUTES=Object.freeze({
+  freight:Object.freeze([[-1.6,157],[1.5,161],[-1.5,165],[1.5,169],[-1.6,173],[0,177]]),
+  pump:Object.freeze([[0,248],[-1.3,251.6],[1.3,255.2],[-1.3,258.8],[1.3,262.4],[0,266],[0,270]]),
+});
+
 export const RESCUE_BUFF_LABELS=Object.freeze({attack:'攻击力',strength:'力量',jump:'弹跳',speed:'速度'});
 export const RESCUE_BUFF_EFFECTS=Object.freeze({attackDamage:1,strengthRange:.16,strengthKnockback:.16,jumpVelocity:.65,speed:.55});
 export const STAGE14_TUNING=Object.freeze({staticBeamZ:416,staticBeamWidth:7.4,rotatingArmLength:6.2,rotatingArmSpeed:.48,hitPadding:.08,hunterSpawnOffset:7});
@@ -30,6 +55,7 @@ export function rescueBuffTotals(rescuedIndices=[]){
 }
 export function hunterSpawnForStage(stage,{isMech=false,stageLength=30}={}){
   if(isMech)return{x:0,z:stage*stageLength+22};
+  if(stage===RESCUE_FINAL_BOSS_STAGE)return{x:0,z:stage*stageLength+16};
   if(stage===13)return{x:0,z:stage*stageLength+STAGE14_TUNING.hunterSpawnOffset};
   return{x:stage%2?4:-4,z:stage*stageLength+16};
 }

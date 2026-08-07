@@ -1,7 +1,19 @@
 import assert from 'node:assert/strict';
-import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_PLACEMENTS,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_TRAIL_OFFSETS,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_FINAL_BOSS_STAGE,RESCUE_PLACEMENTS,RESCUE_PLATFORM_ROUTES,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_SHARED_STAGE_INDICES,RESCUE_STAGE_SCENES,RESCUE_TRAIL_OFFSETS,RESCUE_UNIQUE_STAGE_INDICES,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
+assert.equal(RESCUE_STAGE_SCENES.length,MODE_CONFIG.rescue.stageCount);
+assert.equal(new Set(RESCUE_STAGE_SCENES.map(scene=>scene.name)).size,MODE_CONFIG.rescue.stageCount);
+assert.deepEqual([...RESCUE_UNIQUE_STAGE_INDICES],[0,1,2,3,4,5,6,7,8,9,13]);
+assert.deepEqual([...RESCUE_SHARED_STAGE_INDICES],[10,11,12,14]);
+assert.ok(RESCUE_UNIQUE_STAGE_INDICES.every(index=>!RESCUE_STAGE_SCENES[index].kind.startsWith('shared-')));
+assert.ok(RESCUE_SHARED_STAGE_INDICES.every(index=>RESCUE_STAGE_SCENES[index].kind.startsWith('shared-')));
+assert.equal(RESCUE_FINAL_BOSS_STAGE,14);
+assert.equal(RESCUE_STAGE_SCENES[RESCUE_FINAL_BOSS_STAGE].kind,'shared-final-boss');
+for(const [routeName,route] of Object.entries(RESCUE_PLATFORM_ROUTES)){
+  assert.ok(route.length>=6,`${routeName} 平台数量不足`);
+  for(let index=1;index<route.length;index++)assert.ok(Math.hypot(route[index][0]-route[index-1][0],route[index][1]-route[index-1][1])<=5.2,`${routeName} 第 ${index} 跳跨度过大`);
+}
 assert.equal(RESCUE_PLAYERS.length,10);
 for(const player of RESCUE_PLAYERS){assert.ok(player.country&&player.team&&Number.isInteger(player.number));assert.ok(RESCUE_BUFF_LABELS[player.buff]);assert.ok(Number.isInteger(player.color)&&Number.isInteger(player.accent)&&Number.isInteger(player.shortsColor));assert.ok(player.appearance&&Number.isInteger(player.appearance.skin)&&Number.isInteger(player.appearance.hair)&&player.appearance.style)}
 assert.deepEqual(Object.fromEntries(RESCUE_PLAYERS.map((player,index)=>[player.name,rescueBuffTotals([index])[player.buff]])),Object.fromEntries(RESCUE_PLAYERS.map(player=>[player.name,1])));
@@ -15,6 +27,7 @@ assert.deepEqual(launchShortcut('?play=rescue-stage14'),{mode:'rescue',stage:13,
 assert.deepEqual(launchShortcut('?play=final-boss'),{mode:'escape',stage:19,rescuedIndices:[]});
 assert.equal(launchShortcut('?play=escape'),null);
 assert.deepEqual(hunterSpawnForStage(13),{x:0,z:397});
+assert.deepEqual(hunterSpawnForStage(RESCUE_FINAL_BOSS_STAGE),{x:0,z:436});
 assert.deepEqual(hunterSpawnForStage(19,{isMech:true}),{x:0,z:592});
 assert.ok(STAGE14_TUNING.rotatingArmSpeed<=.5&&STAGE14_TUNING.rotatingArmLength<=6.2&&STAGE14_TUNING.hitPadding<=.08);
 assert.ok(Math.abs(hunterSpawnForStage(13).x-4.9)>2.6/2+.58,'第 14 关梅东出生点不得卡在右侧维修台内');
@@ -67,6 +80,9 @@ assert.equal(requiredRescueForCheckpoint(11),null);
 for(let stage=1;stage<15;stage++)assert.ok(rescueHunterHp(stage)>rescueHunterHp(stage-1));
 
 console.log('PASS  三种模式关卡数量正确');
+console.log('PASS  拯救模式拥有 11 个独立关卡，仅厕所三关与最终战复用原区域');
+console.log('PASS  拯救模式第 15 关会在中央安全区触发最终梅东 Boss');
+console.log('PASS  货运井与泵房所有连续平台跨度均低于基础跳跃安全上限');
 console.log('PASS  十二级数学题可随机变化并准确判分');
 console.log('PASS  十名球员按检查点顺序形成营救门槛');
 console.log('PASS  十组钥匙和笼子均位于对应关卡安全范围');
