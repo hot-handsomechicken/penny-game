@@ -326,7 +326,7 @@ function nationalKit(player){let kit=nationalKits.get(player.name);if(kit)return
 const starMaterials=new Map();
 function starMaterial(player,type){const key=`${player.name}-${type}`;if(starMaterials.has(key))return starMaterials.get(key);const appearance=player.appearance,color=type==='skin'?appearance.skin:type==='accent'?(appearance.hairAccent??appearance.hair):appearance.hair,mat=new THREE.MeshStandardMaterial({color,roughness:type==='skin'?1:.96});starMaterials.set(key,mat);return mat}
 function canvasPolygon(q,points){q.beginPath();q.moveTo(...points[0]);for(const point of points.slice(1))q.lineTo(...point);q.closePath();q.fill()}
-// 从用户提供的 B罗 发型图直接二值化、缩放到 64×64 后得到的刘海行跨度。
+// 从用户提供的萝姐发型图直接二值化、缩放到 64×64 后得到的刘海行跨度。
 // 发际线由立体模型负责；这里只绘制从第 15 行垂到眼睛附近的独立发束。
 const BRO_FRINGE_ROWS=[
   [15,[[0,6],[17,46],[55,63]]],[16,[[0,6],[24,37],[45,48],[56,63]]],[17,[[0,6],[23,27],[34,37],[46,48],[56,63]]],
