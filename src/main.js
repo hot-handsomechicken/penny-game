@@ -342,6 +342,12 @@ function paintFineFringe(q,player){q.fillStyle=colorCss(player.appearance.hair);
     for(const [y,spans] of BRO_FRINGE_ROWS)for(const [x0,x1] of spans)q.fillRect(x0,y,x1-x0+1,1);
   }else if(player.name==='德克米'){
     canvasPolygon(q,[[25,9],[31,10],[31,18],[29,25],[26,21]]);canvasPolygon(q,[[34,9],[40,10],[39,18],[36,25],[34,20]]);
+  }else if(player.name==='白雪公主-卡'){
+    // KK.JPG 的大块妹妹头：顶部整片压低，三束圆弧刘海分别落向额头两侧和眼睛附近。
+    q.fillRect(8,8,48,14);
+    canvasPolygon(q,[[8,15],[19,14],[27,23],[26,34],[21,43],[16,37],[12,28]]);
+    canvasPolygon(q,[[23,13],[35,12],[40,22],[37,34],[33,45],[28,37],[26,25]]);
+    canvasPolygon(q,[[36,13],[51,14],[56,22],[53,31],[48,39],[43,32],[41,23]]);
   }else if(player.name==='小马宝莉'){
     canvasPolygon(q,[[11,13],[23,14],[31,21],[27,31],[20,28],[14,37]]);canvasPolygon(q,[[42,14],[54,12],[50,29],[44,35]]);
   }
@@ -407,7 +413,7 @@ for(const [i,player] of RESCUE_PLAYERS.entries()){
   box(0,.12,0,3.1,.24,2.6,M.metal,false,true,cage);for(const x of [-1.4,-.7,0,.7,1.4])box(x,1.65,0,.12,3.1,2.45,M.bar,false,true,cage);box(0,3.16,0,3.1,.18,2.6,M.rust,false,true,cage);textSprite(`营救 ${player.name}`,0,4.15,0,.36,'#ffd76c',cage);
   box(0,.12,0,.95,.24,.34,M.green,false,true,key);box(.48,.12,0,.38,.18,.18,M.green,false,true,key);box(-.43,.12,0,.22,.65,.22,M.green,false,true,key);textSprite('KEY',0,1.35,0,.28,'#d7ff67',key);
   const follower=new THREE.Group(),kit=nationalKit(player),playerSkin=starMaterial(player,'skin'),sleeveMaterial=nationalJerseyMaterial(player,'side'),fBody=cube(.92,1,.62,kit.body),fHead=createStarHead(player),fLeg1=cube(.34,.65,.4,kit.shorts),fLeg2=cube(.34,.65,.4,kit.shorts),fArm1=cube(.25,.82,.32,playerSkin),fArm2=cube(.25,.82,.32,playerSkin),fSleeve1=cube(.26,.28,.33,sleeveMaterial),fSleeve2=cube(.26,.28,.33,sleeveMaterial);
-  fSleeve1.position.y=.27;fSleeve2.position.y=.27;fArm1.add(fSleeve1);fArm2.add(fSleeve2);fBody.position.y=1.25;fHead.position.y=2.08;fLeg1.position.set(-.25,.43,0);fLeg2.position.set(.25,.43,0);fArm1.position.set(-.62,1.25,0);fArm2.position.set(.62,1.25,0);follower.add(fBody,fHead,fLeg1,fLeg2,fArm1,fArm2);textSprite(player.name,0,3,0,.28,'#ffffff',follower);follower.visible=false;follower.userData={fLeg1,fLeg2,fArm1,fArm2,index:i};scene.add(follower);rescueFollowers.push(follower);rescueCages.push(cage);rescueKeys.push(key);
+  fSleeve1.position.y=.27;fSleeve2.position.y=.27;fArm1.add(fSleeve1);fArm2.add(fSleeve2);if(player.appearance.sleeve==='long'){fSleeve1.scale.y=fSleeve2.scale.y=2.8;fSleeve1.position.y=fSleeve2.position.y=0}fBody.position.y=1.25;fHead.position.y=2.08;fLeg1.position.set(-.25,.43,0);fLeg2.position.set(.25,.43,0);fArm1.position.set(-.62,1.25,0);fArm2.position.set(.62,1.25,0);follower.add(fBody,fHead,fLeg1,fLeg2,fArm1,fArm2);textSprite(player.name,0,3,0,.28,'#ffffff',follower);follower.visible=false;follower.userData={fLeg1,fLeg2,fArm1,fArm2,index:i};scene.add(follower);rescueFollowers.push(follower);rescueCages.push(cage);rescueKeys.push(key);
 }
 
 // 阿根廷蓝白 10 号“梅东”：参考图侧分短发，豆豆眼微笑脸配深棕色短胡须。
@@ -426,9 +432,9 @@ function loadSkinProfile(){try{const saved=JSON.parse(localStorage.getItem(SKIN_
 const skinProfile=loadSkinProfile();
 function saveSkinProfile(){try{localStorage.setItem(SKIN_PROFILE_KEY,JSON.stringify(skinProfile))}catch{}}
 function availableSkinIds(){return new Set(unlockedSkinIds(skinProfile))}
-function applyHeroSkin(){const available=availableSkinIds();if(!available.has(skinProfile.selected))skinProfile.selected='prisoner';const skin=SKIN_CATALOG.find(item=>item.id===skinProfile.selected)||SKIN_CATALOG[0];for(const starHead of heroStarHeads)starHead.visible=false;heroMedongFrontHair.visible=heroMedongBackHair.visible=heroMedongSideHair.visible=false;head.visible=hair.visible=true;ponytail.visible=skin.id==='ponytail';arm1.material=arm2.material=M.skin;heroSleeve1.material=heroSleeve2.material=M.orange;shoe1.material=shoe2.material=M.black;
+function applyHeroSkin(){const available=availableSkinIds();if(!available.has(skinProfile.selected))skinProfile.selected='prisoner';const skin=SKIN_CATALOG.find(item=>item.id===skinProfile.selected)||SKIN_CATALOG[0];for(const starHead of heroStarHeads)starHead.visible=false;heroMedongFrontHair.visible=heroMedongBackHair.visible=heroMedongSideHair.visible=false;head.visible=hair.visible=true;ponytail.visible=skin.id==='ponytail';arm1.material=arm2.material=M.skin;heroSleeve1.material=heroSleeve2.material=M.orange;heroSleeve1.scale.y=heroSleeve2.scale.y=1;heroSleeve1.position.y=heroSleeve2.position.y=.34;shoe1.material=shoe2.material=M.black;
   if(skin.id==='medong'){body.material=hBody.material;leg1.material=leg2.material=argentinaWhite;head.material=hHead.material;hair.material=ponytail.material=medongHair;heroMedongFrontHair.visible=heroMedongBackHair.visible=heroMedongSideHair.visible=true;heroSleeve1.material=heroSleeve2.material=argentinaBlue}
-  else if(skin.kind==='rescue'){const index=Number(skin.id.split('-')[1]),player=RESCUE_PLAYERS[index],kit=nationalKit(player);body.material=kit.body;leg1.material=leg2.material=kit.shorts;head.visible=hair.visible=ponytail.visible=false;heroStarHeads[index].visible=true;arm1.material=arm2.material=starMaterial(player,'skin');heroSleeve1.material=heroSleeve2.material=nationalJerseyMaterial(player,'side')}
+  else if(skin.kind==='rescue'){const index=Number(skin.id.split('-')[1]),player=RESCUE_PLAYERS[index],kit=nationalKit(player);body.material=kit.body;leg1.material=leg2.material=kit.shorts;head.visible=hair.visible=ponytail.visible=false;heroStarHeads[index].visible=true;arm1.material=arm2.material=starMaterial(player,'skin');heroSleeve1.material=heroSleeve2.material=nationalJerseyMaterial(player,'side');if(player.appearance.sleeve==='long'){heroSleeve1.scale.y=heroSleeve2.scale.y=2.8;heroSleeve1.position.y=heroSleeve2.position.y=0}}
   else{body.material=leg1.material=leg2.material=M.orange;head.material=[M.skin,M.skin,M.hair,M.skin,heroFace,M.skin];hair.material=ponytail.material=M.hair}
   selectedSkinName.textContent=skin.name;saveSkinProfile()
 }
