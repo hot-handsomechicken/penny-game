@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#111820" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>方块越狱：封锁区</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/penny-game/assets/index-BSNdXogt.js"></script>
+    <link rel="stylesheet" crossorigin href="/penny-game/assets/index-hoOAchT1.css">
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="hud">
+      <div class="brand"><span>⛓</span><b>BLOCK<br>BREAK</b></div>
+      <div class="progress"><div id="bar"></div><strong id="stage">牢房区 · 01</strong></div>
+      <div class="timer">⏱ <span id="time">00:00</span></div>
+      <button id="reset" class="pill yellow" aria-label="从头重新开始">↻ 重新越狱</button>
+      <button id="skins" class="pill skin-button" aria-label="打开皮肤衣柜">👕 皮肤</button>
+      <button id="pauseButton" class="pill pause-button" aria-label="暂停游戏">Ⅱ</button>
+      <button id="sound" class="pill cyan" aria-label="切换音效与主题曲">🔊</button>
+    </div>
+    <div id="mission"><small>▰ 越狱目标</small><b id="missionText">翻过牢房警戒线</b></div>
+    <div id="hunterHud" class="hidden">
+      <div class="hunter-title"><span id="hunterTitle">⚠ 梅东 · 阿根廷10号</span><b id="hunterHpText">100 / 100</b></div>
+      <div id="hunterMainBar" class="hunter-bar"><i id="hunterHp"></i></div>
+      <div id="mechArms" class="hidden">
+        <div><span>左机械臂</span><i><b id="leftArmHp"></b></i></div>
+        <div><span>右机械臂</span><i><b id="rightArmHp"></b></i></div>
+      </div>
+      <div id="hunterIntent">正在锁定目标</div>
+    </div>
+    <div id="weaponHud" class="hidden">💵 钞票枪已装备</div>
+    <div id="rescueHud" class="hidden"><b>🔑 尚未取得钥匙</b><span>已营救 0 / 14</span><small id="rescueBuffs">攻击 +0 · 力量 +0 · 弹跳 +0 · 速度 +0</small></div>
+    <form id="mathPanel" class="hidden">
+      <small>梅东老师 · 数学期末考试</small>
+      <b id="mathQuestion">准备答题</b>
+      <div><input id="mathAnswer" inputmode="decimal" autocomplete="off" aria-label="数学题答案" placeholder="输入答案"><button type="submit">提交答案</button></div>
+      <em>不限时 · 答错会返回本教室检查点</em>
+    </form>
+    <form id="rosisterPanel" class="hidden">
+      <small>萝姐挑战 · 梅东限时答题</small>
+      <b id="rosisterQuestion">准备答题</b>
+      <div id="rosisterChoices"></div>
+      <div class="rosister-answer"><input id="rosisterAnswer" inputmode="decimal" autocomplete="off" aria-label="萝姐挑战答案" placeholder="输入答案"><button type="submit">提交</button></div>
+      <em>答错或倒计时归零会被梅东击杀并返回当前检查点</em>
+      <strong id="rosisterTimer">-- 秒</strong>
+    </form>
+    <div id="aimReticle" class="hidden" aria-hidden="true"><i></i></div>
+    <button id="attack" class="hidden">👊<span id="attackLabel">攻击 [F]</span></button>
+    <div id="tip">WASD 移动 · 空格跳跃 · 拖动旋转 · 滚轮缩放 · C 回正视角 · F 攻击</div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="toiletEvent" class="hidden" role="alert"><b>你被尸体吓晕了</b></div>
+    <div id="rotateHint">↻ 横屏游玩体验更佳</div>
+    <div id="mobile">
+      <div id="stick"><i></i></div>
+      <button id="jump" aria-label="跳跃">⬆<span>跳跃</span></button>
+    </div>
+    <div id="start" class="overlay">
+      <div class="card">
+        <div class="wanted">PRISONER #087</div>
+        <div class="mascot">⛓️</div>
+        <p class="eyebrow">VOXEL PRISON ESCAPE</p>
+        <h1>方块越狱<br><em>封锁区</em></h1>
+        <p>选择行动模式：经典越狱、12 关数学期末考试、营救 14 名球员，或单独挑战萝姐的限时问答。</p>
+        <div class="checkpoint-note"><i></i><span><b>绿色信标 = 检查点</b><small>激活后，失败会从这里继续</small></span></div>
+        <button id="openSkins" class="wardrobe-launch">👕 皮肤衣柜</button>
+        <div class="mode-buttons">
+          <button id="play">⛓ 经典越狱 <span>20 关</span></button>
+          <button id="playMath">📐 数学期末 <span>12 关</span></button>
+          <button id="playRescue">🔑 球星拯救 <span>15 关</span></button>
+          <button id="playRosister">🥕 萝姐挑战 <span>5 关限时问答</span></button>
+        </div>
+        <small><span class="desktop-copy">WASD 移动 · 空格跳跃 · 拖动旋转视角</span><span class="mobile-copy">左侧摇杆移动 · 右侧按钮跳跃/攻击 · 空白区域拖动视角</span></small>
+      </div>
+    </div>
+    <div id="win" class="overlay hidden">
+      <div class="card win-card">
+        <div class="mascot">🚁</div><p class="eyebrow">MISSION COMPLETE</p>
+        <h1 id="winTitle">越狱成功！</h1><p id="winCopy">本次 20 关逃脱用时</p><div id="finalTime">00:00</div>
+        <div id="bestTime">最佳纪录 --:--</div>
+        <button id="again">再次潜入 <span>↻</span></button>
+        <div id="unlockReward" class="unlock-reward hidden">🏆 奖励已解锁！</div>
+        <button id="winSkins" class="secondary">查看皮肤衣柜</button>
+        <button id="changeModeWin" class="secondary">选择其他模式</button>
+      </div>
+    </div>
+    <div id="pauseMenu" class="overlay hidden">
+      <div class="card pause-card">
+        <p class="eyebrow">SYSTEM PAUSED</p>
+        <h1>行动暂停</h1>
+        <div class="setting-row"><label for="quality">画质</label><select id="quality"><option value="auto">自动</option><option value="high">高画质</option><option value="low">流畅</option></select></div>
+        <div class="perf-row">实时性能 <b id="fpsReadout">-- FPS</b></div>
+        <button id="resume">继续越狱 <span>▶</span></button>
+        <button id="pauseRestart" class="secondary">从头开始 <span>↻</span></button>
+        <button id="changeMode" class="secondary">返回模式选择</button>
+        <small>按 ESC 可继续游戏</small>
+      </div>
+    </div>
+    <div id="skinsPanel" class="overlay hidden wardrobe-overlay">
+      <div class="card wardrobe-card">
+        <p class="eyebrow">PLAYER SKINS</p>
+        <h1>皮肤衣柜</h1>
+        <p>已选择：<b id="selectedSkinName">默认囚犯</b></p>
+        <div id="skinGrid" class="skin-grid"></div>
+        <button id="closeSkins" class="secondary">返回游戏</button>
+        <small>拯救模式通关后，10 位球星皮肤会永久解锁并在所有模式通用。</small>
+      </div>
+    </div>
+    <div id="skinReward" class="overlay reward-overlay hidden">
+      <div class="card reward-card">
+        <div class="reward-badge">FREE SKIN</div>
+        <div class="skin-gift-preview"><i></i><b>10</b></div>
+        <p class="eyebrow">WELCOME GIFT</p>
+        <h1>免费梅东皮肤</h1>
+        <p>首次进入即可永久领取，在三个模式中都能使用。</p>
+        <button id="claimMedong">领取梅东皮肤</button>
+        <small>免费 · 永久保存在当前浏览器</small>
+      </div>
+    </div>
+  </body>
+</html>
