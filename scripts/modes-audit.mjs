@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_FINAL_BOSS_STAGE,RESCUE_PLACEMENTS,RESCUE_PLATFORM_ROUTES,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_SHARED_STAGE_INDICES,RESCUE_STAGE_SCENES,RESCUE_TRAIL_OFFSETS,RESCUE_UNIQUE_STAGE_INDICES,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,createRosisterQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
+import {CLUB_PACK_SKINS,MEDONG_APPEARANCE,MODE_CONFIG,RESCUE_BATTLE_OFFSETS,RESCUE_BUFF_EFFECTS,RESCUE_BUFF_LABELS,RESCUE_FINAL_BOSS_STAGE,RESCUE_PLACEMENTS,RESCUE_PLATFORM_ROUTES,RESCUE_PLAYERS,RESCUE_REWARD_SKIN_IDS,RESCUE_SHARED_STAGE_INDICES,RESCUE_STAGE_SCENES,RESCUE_TRAIL_OFFSETS,RESCUE_UNIQUE_STAGE_INDICES,SKIN_CATALOG,STAGE14_TUNING,STAR_FACE_STYLE,STAR_FACE_TEXTURE_SIZE,TOILET_LAYOUT,createMathQuestion,createRosisterQuestion,hunterSpawnForStage,isMathAnswerCorrect,isToiletNoCombat,launchShortcut,requiredRescueForCheckpoint,rescueBuffTotals,rescueHunterHp,unlockedSkinIds} from '../src/modes.js';
 
 assert.deepEqual([MODE_CONFIG.escape.stageCount,MODE_CONFIG.math.stageCount,MODE_CONFIG.rescue.stageCount],[20,12,15]);
 assert.equal(RESCUE_STAGE_SCENES.length,MODE_CONFIG.rescue.stageCount);
@@ -44,7 +44,9 @@ assert.equal(RESCUE_PLAYERS.find(player=>player.name==='黄金小兔兔').appear
 const beardedStars=RESCUE_PLAYERS.filter(player=>player.appearance.facialHair==='short-full-beard');assert.deepEqual(beardedStars.map(player=>player.name),['小美叔叔']);assert.ok(Number.isInteger(beardedStars[0].appearance.beard));
 assert.equal(MEDONG_APPEARANCE.facialHair,'short-full-beard');assert.ok(Number.isInteger(MEDONG_APPEARANCE.beard));
 assert.deepEqual([...new Set(RESCUE_PLAYERS.map(player=>player.country))].sort(),['克罗地亚','巴西','挪威','法国','英格兰','葡萄牙','西班牙'].sort());
-assert.equal(SKIN_CATALOG.length,18);
+assert.equal(SKIN_CATALOG.length,24);
+assert.equal(CLUB_PACK_SKINS.reduce((sum,skin)=>sum+skin.weight,0),100);
+assert.deepEqual(CLUB_PACK_SKINS.map(skin=>skin.id),['club-dekimi','club-uncle','club-courtois','club-hahaha','club-waimar','club-rosister']);
 assert.deepEqual(unlockedSkinIds(),['prisoner','ponytail']);
 assert.deepEqual(unlockedSkinIds({claimedMedong:true}),['prisoner','ponytail','medong']);
 assert.equal(RESCUE_REWARD_SKIN_IDS.length,14);

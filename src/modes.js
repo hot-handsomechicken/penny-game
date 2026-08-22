@@ -28,6 +28,23 @@ export const RESCUE_PLAYERS=[
 export const RESCUE_MODE_PLAYER_INDICES=Object.freeze(RESCUE_PLAYERS.slice(1).map((_,index)=>index+1));
 export const RESCUE_MODE_PLAYERS=Object.freeze(RESCUE_MODE_PLAYER_INDICES.map(index=>RESCUE_PLAYERS[index]));
 
+// 俱乐部球衣卡包：每次任意模式通关获得一包，权重合计 100%。
+// sourceIndex 复用对应国家队球星的脸型/发型；裤袜使用独立的门将外观。
+export const CLUB_PACK_SKINS=Object.freeze([
+  {id:'club-dekimi',name:'德克米 · 阿森纳',shortName:'德克米',club:'阿森纳',clubStyle:'arsenal',sourceIndex:9,color:0xd71920,accent:0xffffff,weight:55,number:4},
+  {id:'club-uncle',name:'小美叔叔 · 拜仁',shortName:'小美叔叔',club:'拜仁',clubStyle:'bayern',sourceIndex:8,color:0xd71920,accent:0xffffff,weight:20,number:9},
+  {id:'club-courtois',name:'裤袜 · 皇家马德里门将',shortName:'裤袜',club:'皇家马德里',clubStyle:'real-gk',color:0x16a6a1,accent:0xf2d24b,weight:15,number:1,appearance:{skin:0xb87962,hair:0x3a2418,style:'short-side-sweep',faceWidth:.78,faceHeight:.8,beard:0x4a2e1d,facialHair:'short-full-beard'}},
+  {id:'club-hahaha',name:'哈哈哈 · 曼城',shortName:'哈哈哈',club:'曼城',clubStyle:'mancity',sourceIndex:6,color:0x6cadde,accent:0x172d58,weight:7.5,number:9},
+  {id:'club-waimar',name:'外马尔 · 巴萨',shortName:'外马尔',club:'巴萨',clubStyle:'barca',sourceIndex:2,color:0x7d173b,accent:0x172b68,weight:2,number:10},
+  {id:'club-rosister',name:'萝姐 · 皇家马德里',shortName:'萝姐',club:'皇家马德里',clubStyle:'real',sourceIndex:0,color:0xf4f4ed,accent:0x162e61,weight:.5,number:7},
+]);
+export const CLUB_PACK_SKIN_IDS=Object.freeze(CLUB_PACK_SKINS.map(skin=>skin.id));
+export function rollClubPack(random=Math.random){
+  const value=Math.max(0,Math.min(.999999999,Number(random())||0))*100;let cursor=0;
+  for(const skin of CLUB_PACK_SKINS){cursor+=skin.weight;if(value<cursor)return skin.id}
+  return CLUB_PACK_SKIN_IDS.at(-1);
+}
+
 export const RESCUE_STAGE_SCENES=Object.freeze([
   {name:'地下接应暗道',mission:'绕过掩体找到钥匙',kind:'cover-maze'},
   {name:'巡逻犬舍外围',mission:'利用犬舍间隙避开巡逻灯',kind:'patrol-yard'},
@@ -87,14 +104,16 @@ export const SKIN_CATALOG=[
   {id:'ponytail',name:'马尾女孩',color:0xe68b2c,kind:'default'},
   {id:'medong',name:'梅东',color:0x74c8ee,kind:'medong'},
   ...RESCUE_PLAYERS.map((player,index)=>({id:`rescue-${index}`,name:player.name,country:player.country,color:player.color,accent:player.accent,kind:'rescue'})),
+  ...CLUB_PACK_SKINS.map(skin=>({...skin,kind:'club'})),
 ];
 export const RESCUE_REWARD_SKIN_IDS=RESCUE_MODE_PLAYER_INDICES.map(index=>`rescue-${index}`);
 export const RESCUE_ROSISTER_SKIN_ID='rescue-0';
-export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false,rosisterCompleted=false}={}){
+export function unlockedSkinIds({claimedMedong=false,rescueCompleted=false,rosisterCompleted=false,clubPackSkins=[]}={}){
   const unlocked=['prisoner','ponytail'];
   if(claimedMedong)unlocked.push('medong');
   if(rescueCompleted)unlocked.push(...RESCUE_REWARD_SKIN_IDS);
   if(rosisterCompleted)unlocked.push(RESCUE_ROSISTER_SKIN_ID);
+  if(Array.isArray(clubPackSkins))unlocked.push(...clubPackSkins.filter(id=>CLUB_PACK_SKIN_IDS.includes(id)));
   return unlocked;
 }
 
