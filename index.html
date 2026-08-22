@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/penny-game/assets/index-BSNdXogt.js"></script>
-    <link rel="stylesheet" crossorigin href="/penny-game/assets/index-hoOAchT1.css">
+    <script type="module" crossorigin src="/penny-game/assets/index-CwtgZtrX.js"></script>
+    <link rel="stylesheet" crossorigin href="/penny-game/assets/index-DkPxbDUt.css">
   </head>
   <body>
     <div id="game"></div>
@@ -22,6 +22,7 @@
       <div class="timer">⏱ <span id="time">00:00</span></div>
       <button id="reset" class="pill yellow" aria-label="从头重新开始">↻ 重新越狱</button>
       <button id="skins" class="pill skin-button" aria-label="打开皮肤衣柜">👕 皮肤</button>
+      <button id="packs" class="pill pack-button" aria-label="打开俱乐部球衣卡包">🎁 <span id="packCount">0</span></button>
       <button id="pauseButton" class="pill pause-button" aria-label="暂停游戏">Ⅱ</button>
       <button id="sound" class="pill cyan" aria-label="切换音效与主题曲">🔊</button>
     </div>
@@ -86,6 +87,7 @@
         <div id="bestTime">最佳纪录 --:--</div>
         <button id="again">再次潜入 <span>↻</span></button>
         <div id="unlockReward" class="unlock-reward hidden">🏆 奖励已解锁！</div>
+        <button id="openPackWin" class="secondary hidden">🎁 开启俱乐部球衣卡包</button>
         <button id="winSkins" class="secondary">查看皮肤衣柜</button>
         <button id="changeModeWin" class="secondary">选择其他模式</button>
       </div>
@@ -121,6 +123,19 @@
         <p>首次进入即可永久领取，在三个模式中都能使用。</p>
         <button id="claimMedong">领取梅东皮肤</button>
         <small>免费 · 永久保存在当前浏览器</small>
+      </div>
+    </div>
+    <div id="packReward" class="overlay reward-overlay hidden">
+      <div class="card reward-card pack-card">
+        <div class="reward-badge">CLUB KIT PACK</div>
+        <div id="packVisual" class="pack-visual">🎁</div>
+        <p class="eyebrow">RANDOM CLUB SKIN</p>
+        <h1 id="packTitle">俱乐部球衣卡包</h1>
+        <p id="packCopy">未开启卡包：<b id="packCountPanel">0</b> 包</p>
+        <p id="packOdds" class="pack-odds">德克米 55% · 小美叔叔 20% · 裤袜 15% · 哈哈哈 7.5% · 外马尔 2% · 萝姐 0.5%</p>
+        <div id="packResult" class="pack-result hidden"></div>
+        <button id="openPack">开启一包</button>
+        <button id="closePack" class="secondary">关闭</button>
       </div>
     </div>
   </body>
